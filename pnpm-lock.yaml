@@ -20,6 +20,15 @@ importers:
 
   apps/admin:
     dependencies:
+      '@vitakart/types':
+        specifier: workspace:^
+        version: link:../../packages/types
+      '@vitakart/utils':
+        specifier: workspace:^
+        version: link:../../packages/utils
+      '@vitakart/validators':
+        specifier: workspace:^
+        version: link:../../packages/validators
       next:
         specifier: 16.2.10
         version: 16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -57,6 +66,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@vitakart/types':
+        specifier: workspace:^
+        version: link:../../packages/types
+      '@vitakart/utils':
+        specifier: workspace:^
+        version: link:../../packages/utils
+      '@vitakart/validators':
+        specifier: workspace:^
+        version: link:../../packages/validators
       next:
         specifier: 16.2.10
         version: 16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -128,6 +146,12 @@ importers:
         specifier: ^8.50.0
         version: 8.50.0(eslint@9.39.1(jiti@2.7.0))(typescript@5.9.2)
 
+  packages/types:
+    devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.2
+
   packages/typescript-config: {}
 
   packages/ui:
@@ -159,6 +183,22 @@ importers:
         version: 9.39.1(jiti@2.7.0)
       typescript:
         specifier: 5.9.2
+        version: 5.9.2
+
+  packages/utils:
+    devDependencies:
+      typescript:
+        specifier: ^5
+        version: 5.9.2
+
+  packages/validators:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5
         version: 5.9.2
 
 packages:
@@ -2122,8 +2162,8 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
 
@@ -3213,8 +3253,8 @@ snapshots:
       '@babel/parser': 7.29.7
       eslint: 9.39.1(jiti@2.7.0)
       hermes-parser: 0.25.1
-      zod: 4.4.3
-      zod-validation-error: 4.0.2(zod@4.4.3)
+      zod: 3.25.76
+      zod-validation-error: 4.0.2(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
@@ -4315,8 +4355,8 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@4.0.2(zod@4.4.3):
+  zod-validation-error@4.0.2(zod@3.25.76):
     dependencies:
-      zod: 4.4.3
+      zod: 3.25.76
 
-  zod@4.4.3: {}
+  zod@3.25.76: {}
