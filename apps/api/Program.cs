@@ -1,5 +1,5 @@
 // File: apps/api/Program.cs
-// Entry point with JWT authentication configured
+// Fixed JWT claim mapping issue
 
 using api.API.Middleware;
 using api.Application.Interfaces;
@@ -9,9 +9,13 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 Env.Load();
+
+// IMPORTANT: Clear default claim mapping BEFORE anything else
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +32,6 @@ builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteOptions>(options =>
 
 builder.Services.AddOpenApi();
 
-// PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
@@ -39,14 +42,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// Tenant Context
 builder.Services.AddScoped<ITenantContext, TenantContext>();
-
-// JWT & Auth Services
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// JWT Authentication Configuration
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") 
     ?? throw new Exception("JWT_SECRET not set");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "vitakart-api";
@@ -63,36 +62,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            NameClaimType = "sub",
+            RoleClaimType = "role"
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ============================================
-// BUILD APP
-// ============================================
-
 var app = builder.Build();
-
-// ============================================
-// MIDDLEWARE (ORDER MATTERS!)
-// ============================================
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
-
-// Tenant middleware first
 app.UseMiddleware<TenantResolverMiddleware>();
-
-// Then auth middleware
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

@@ -1,10 +1,11 @@
 // File: apps/api/Controllers/AuthController.cs
-// API endpoints for authentication
-// Routes: /api/auth/register, /api/auth/login
+// Final clean version — returns user info
 
 using api.Application.DTOs;
 using api.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace api.Controllers;
 
@@ -23,29 +24,34 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        try
-        {
-            var result = await _authService.RegisterAsync(dto);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _authService.RegisterAsync(dto);
+        return Ok(result);
     }
 
     // POST: api/auth/login
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        try
+        var result = await _authService.LoginAsync(dto);
+        return Ok(result);
+    }
+
+    // GET: api/auth/me — PROTECTED
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<UserInfoDto>> GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst("sub")?.Value
+                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
         {
-            var result = await _authService.LoginAsync(dto);
-            return Ok(result);
+            return Unauthorized(new { message = "Invalid token" });
         }
-        catch (Exception ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+
+        var userId = Guid.Parse(userIdClaim);
+        var user = await _authService.GetCurrentUserAsync(userId);
+
+        return Ok(user);
     }
 }

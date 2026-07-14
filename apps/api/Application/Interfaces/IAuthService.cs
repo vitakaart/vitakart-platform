@@ -1,5 +1,5 @@
 // File: apps/api/Application/Interfaces/IAuthService.cs
-// Contract for authentication operations
+// Added GetCurrentUserAsync method
 
 using api.Application.DTOs;
 
@@ -7,9 +7,9 @@ namespace api.Application.Interfaces;
 
 public interface IAuthService
 {
-    // Register new user, returns tokens
     Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
-
-    // Login existing user, returns tokens
     Task<AuthResponseDto> LoginAsync(LoginDto dto);
+    
+    // Get logged in user info from token
+    Task<UserInfoDto> GetCurrentUserAsync(Guid userId);
 }

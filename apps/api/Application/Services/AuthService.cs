@@ -1,10 +1,10 @@
 // File: apps/api/Application/Services/AuthService.cs
-// Handles register and login business logic
-// Uses BCrypt to hash passwords securely
+// Added GetCurrentUserAsync method
 
 using api.Application.DTOs;
 using api.Application.Interfaces;
 using api.Domain.Entities;
+using api.Domain.Exceptions;
 using api.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,27 +28,23 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        // Check tenant is set (from middleware)
         if (!_tenantContext.IsResolved)
         {
-            throw new Exception("Tenant not resolved");
+            throw new ValidationException("Tenant not resolved");
         }
 
         var tenantId = _tenantContext.TenantId!.Value;
 
-        // Check if email already exists for this tenant
         var emailExists = await _context.Users
             .AnyAsync(u => u.Email == dto.Email && u.TenantId == tenantId);
 
         if (emailExists)
         {
-            throw new Exception("Email already registered");
+            throw new ValidationException("Email already registered");
         }
 
-        // Hash password (never store plain password!)
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-        // Create new user
         var user = new User
         {
             TenantId = tenantId,
@@ -64,7 +60,6 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        // Generate tokens
         return new AuthResponseDto
         {
             AccessToken = _jwtService.GenerateAccessToken(user),
@@ -84,12 +79,11 @@ public class AuthService : IAuthService
     {
         if (!_tenantContext.IsResolved)
         {
-            throw new Exception("Tenant not resolved");
+            throw new ValidationException("Tenant not resolved");
         }
 
         var tenantId = _tenantContext.TenantId!.Value;
 
-        // Find user by email and tenant
         var user = await _context.Users
             .FirstOrDefaultAsync(u => 
                 u.Email == dto.Email && 
@@ -98,23 +92,21 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            throw new Exception("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         if (!user.IsActive)
         {
-            throw new Exception("Account is deactivated");
+            throw new UnauthorizedException("Account is deactivated");
         }
 
-        // Verify password
         var passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
         if (!passwordValid)
         {
-            throw new Exception("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
-        // Generate tokens
         return new AuthResponseDto
         {
             AccessToken = _jwtService.GenerateAccessToken(user),
@@ -127,6 +119,28 @@ public class AuthService : IAuthService
                 Role = user.Role,
                 IsVerified = user.IsVerified
             }
+        };
+    }
+
+    // NEW METHOD — Get current user info
+    public async Task<UserInfoDto> GetCurrentUserAsync(Guid userId)
+    {
+        var user = await _context.Users
+            .Where(u => u.Id == userId && !u.IsDeleted && u.IsActive)
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            throw new NotFoundException("User not found");
+        }
+
+        return new UserInfoDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Role = user.Role,
+            IsVerified = user.IsVerified
         };
     }
 }

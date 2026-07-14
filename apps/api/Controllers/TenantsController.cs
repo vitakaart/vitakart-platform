@@ -1,11 +1,11 @@
 // File: apps/api/Controllers/TenantsController.cs
-// This controller handles all Tenant-related API endpoints
-// Routes: /api/tenants
-// Methods: GET all, GET by id, POST create
+// POST endpoint now requires authentication
 
 using api.Application.DTOs;
 using api.Domain.Entities;
+using api.Domain.Exceptions;
 using api.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,14 +17,12 @@ public class TenantsController : ControllerBase
 {
     private readonly AppDbContext _context;
 
-    // Constructor — DbContext injected automatically
     public TenantsController(AppDbContext context)
     {
         _context = context;
     }
 
-    // GET: api/tenants
-    // Returns all tenants (not deleted)
+    // GET: api/tenants — Public
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TenantDto>>> GetAll()
     {
@@ -47,8 +45,7 @@ public class TenantsController : ControllerBase
         return Ok(tenants);
     }
 
-    // GET: api/tenants/{id}
-    // Returns one tenant by id
+    // GET: api/tenants/{id} — Public
     [HttpGet("{id}")]
     public async Task<ActionResult<TenantDto>> GetById(Guid id)
     {
@@ -70,27 +67,25 @@ public class TenantsController : ControllerBase
 
         if (tenant == null)
         {
-            return NotFound(new { message = "Tenant not found" });
+            throw new NotFoundException("Tenant not found");
         }
 
         return Ok(tenant);
     }
 
-    // POST: api/tenants
-    // Creates a new tenant
+    // POST: api/tenants — PROTECTED (need token)
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<TenantDto>> Create(CreateTenantDto dto)
     {
-        // Check if slug already exists
         var slugExists = await _context.Tenants
             .AnyAsync(t => t.Slug == dto.Slug);
 
         if (slugExists)
         {
-            return BadRequest(new { message = "Slug already exists" });
+            throw new ValidationException("Slug already exists");
         }
 
-        // Create new tenant
         var tenant = new Tenant
         {
             Name = dto.Name,
@@ -104,7 +99,6 @@ public class TenantsController : ControllerBase
         _context.Tenants.Add(tenant);
         await _context.SaveChangesAsync();
 
-        // Return the created tenant
         var result = new TenantDto
         {
             Id = tenant.Id,
