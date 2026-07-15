@@ -1,7 +1,5 @@
 // File: apps/api/Domain/Entities/Category.cs
-// Product categories — e.g., "Supplements", "Fitness", "Personal Care"
-// Every category belongs to a tenant
-// So different brands can have different categories
+// Added ParentCategoryId for nested categories (parent-child hierarchy)
 
 using api.Domain.Common;
 
@@ -11,6 +9,10 @@ public class Category : BaseEntity, ITenantEntity
 {
     // Which tenant this category belongs to
     public Guid TenantId { get; set; }
+
+    // Parent category ID (null = top level category)
+    // Example: "Vitamins" ka parent "Health Supplements" hoga
+    public Guid? ParentCategoryId { get; set; }
 
     // Category name — e.g., "Supplements"
     public string Name { get; set; } = string.Empty;
@@ -33,4 +35,8 @@ public class Category : BaseEntity, ITenantEntity
     // SEO fields
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
+
+    // Navigation properties
+    public Category? ParentCategory { get; set; }
+    public ICollection<Category> SubCategories { get; set; } = new List<Category>();
 }

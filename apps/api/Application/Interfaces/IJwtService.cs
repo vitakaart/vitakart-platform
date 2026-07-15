@@ -1,5 +1,5 @@
 // File: apps/api/Application/Interfaces/IJwtService.cs
-// Contract for JWT token generation service
+// Added helper to get refresh token expiry days
 
 using api.Domain.Entities;
 
@@ -12,4 +12,7 @@ public interface IJwtService
 
     // Generate refresh token (long lived, 7 days)
     string GenerateRefreshToken();
+
+    // Get refresh token expiry days from config
+    int GetRefreshTokenExpiryDays();
 }

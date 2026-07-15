@@ -74,6 +74,10 @@
 - [x] API tested (localhost:5208/weatherforecast) ✅
 - [x] All 3 apps running parallel via pnpm dev ✅
 
+# 🎯 Complete System Status
+- Web:      http://localhost:3000 ✅
+- Admin:    http://localhost:3001 ✅
+- API:      http://localhost:5208 ✅
 
 # 📅 DAY 2 — SETUP COMPLETED
 
@@ -204,14 +208,149 @@
 - Database: Neon PostgreSQL ✅
 - Testing:  Thunder Client ✅
 
+# 📅 DAY 3 — MULTI-TENANT + JWT AUTH
+
+## ✅ Multi-Tenant Middleware
+- [x] ITenantContext interface created
+- [x] TenantContext service implementation
+- [x] TenantResolverMiddleware created
+- [x] Middleware registered in Program.cs
+- [x] Reads X-Tenant-Slug header
+- [x] Validates tenant exists in DB
+- [x] Blocks invalid tenants (404)
+- [x] Blocks missing header (400)
+- [x] Skips /api/tenants and /openapi paths
+- [x] Sets tenant context per request
+
+## ✅ JWT Authentication Setup
+- [x] Microsoft.AspNetCore.Authentication.JwtBearer installed
+- [x] System.IdentityModel.Tokens.Jwt installed
+- [x] BCrypt.Net-Next installed
+- [x] JWT secrets added to .env
+- [x] JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE configured
+- [x] JWT_EXPIRY_MINUTES set to 60
+- [x] JWT_REFRESH_EXPIRY_DAYS set to 7
+
+## ✅ Auth Layer Created
+- [x] AuthDto.cs (RegisterDto, LoginDto, AuthResponseDto, UserInfoDto)
+- [x] IJwtService interface
+- [x] IAuthService interface
+- [x] JwtService implementation (access + refresh tokens)
+- [x] AuthService implementation (register + login)
+- [x] AuthController with endpoints
+
+## ✅ Auth Endpoints Working
+- [x] POST /api/auth/register
+- [x] POST /api/auth/login
+- [x] Password hashing with BCrypt
+- [x] JWT access token generation
+- [x] Refresh token generation
+- [x] Multi-tenant aware (email unique per tenant)
+
+## ✅ Program.cs Enhanced
+- [x] JWT authentication configured
+- [x] Token validation parameters set
+- [x] Authentication middleware added
+- [x] Authorization middleware added
+- [x] Proper middleware order
+
+## ✅ Testing Complete
+- [x] Register new user - Success
+- [x] Login existing user - Success
+- [x] Duplicate email registration blocked
+- [x] Wrong password rejected
+- [x] Same email works on different tenant (multi-tenant magic!)
+- [x] Tokens generated properly
+
+
+# 🎯 Complete System Status
+- Web:      http://localhost:3000 ✅
+- Admin:    http://localhost:3001 ✅
+- API:      http://localhost:5208 ✅
+- Database: Neon PostgreSQL ✅
+- Auth:     JWT + BCrypt ✅
+- Tenant:   Multi-tenant middleware ✅
+
+# EXCEPTION HANDLING + PROTECTED ENDPOINTS
+
+## ✅ Custom Exceptions Created
+- [x] Domain/Exceptions folder created
+- [x] AppException.cs (base exception class)
+- [x] NotFoundException.cs (404 errors)
+- [x] ValidationException.cs (400 errors)
+- [x] UnauthorizedException.cs (401 errors)
+
+## ✅ Global Exception Handler
+- [x] GlobalExceptionMiddleware.cs created
+- [x] Catches all exceptions globally
+- [x] Returns consistent JSON error format
+- [x] Automatic error logging
+- [x] Custom status codes per exception type
+- [x] Timestamp included in error responses
+- [x] Registered in Program.cs (first middleware)
+
+## ✅ Controllers Cleaned Up
+- [x] AuthController - removed all try-catch blocks
+- [x] TenantsController - removed all try-catch blocks
+- [x] AuthService - uses custom exceptions
+- [x] Cleaner, more readable code
+- [x] No more repeated error handling
+
+## ✅ Protected Endpoints Implemented
+- [x] IAuthService - GetCurrentUserAsync method added
+- [x] AuthService - GetCurrentUserAsync implemented
+- [x] GET /api/auth/me endpoint created
+- [x] [Authorize] attribute applied
+- [x] JWT claims properly read (sub, ClaimTypes.NameIdentifier)
+- [x] POST /api/tenants now requires authentication
+
+## ✅ JWT Claim Mapping Fixed
+- [x] JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear() added
+- [x] NameClaimType = "sub" configured
+- [x] RoleClaimType = "role" configured
+- [x] Original claim names preserved (no auto mapping)
+
+## ✅ Testing Complete
+- [x] Register endpoint tested with new user
+- [x] Login endpoint returns valid token
+- [x] GET /me without token → 401 Unauthorized ✅
+- [x] GET /me with valid token → User info returned ✅
+- [x] POST tenants without token → 401 ✅
+- [x] POST tenants with token → 201 Created ✅
+- [x] Error responses in consistent format
+- [x] Custom exceptions working properly
+
+## ✅ Thunder Client Auth Setup
+- [x] Bearer token auth configured
+- [x] Token Prefix "Bearer" set
+- [x] Auth tab used for token management
+- [x] Multi-header requests working
+
+
+# 🎯 Complete System Status
+- Web:      http://localhost:3000 ✅
+- Admin:    http://localhost:3001 ✅
+- API:      http://localhost:5208 ✅
+- Database: Neon PostgreSQL ✅
+- Auth:     JWT + BCrypt ✅
+- Tenant:   Multi-tenant middleware ✅
+- Errors:   Global exception handler ✅
+- Security: Protected endpoints ✅
+
+
+# 💡 Important Learning
+- .NET does NOT auto reload on code change
+- Must restart server: Ctrl+C then dotnet run
+- Frontend (Next.js) auto reloads via hot reload
+
 
 # 📌 Next Session Plan
-- [ ] Add repository pattern (clean data access)
-- [ ] Add service layer (business logic)
-- [ ] Add more entities (ProductVariant, Address, Cart, Order)
-- [ ] Setup JWT authentication
-- [ ] Setup multi-tenant middleware (auto tenant resolution)
-- [ ] Add validation with FluentValidation
-- [ ] Add API versioning
-- [ ] Add global exception handler
-- [ ] Setup Swagger UI properly
+- [ ] Swagger UI setup (interactive API docs)
+- [ ] Refresh token endpoint
+- [ ] Category CRUD API
+- [ ] Product CRUD API
+- [ ] Role-based authorization (admin only endpoints)
+- [ ] Repository pattern
+- [ ] FluentValidation setup
+- [ ] CORS configuration
+- [ ] Rate limiting

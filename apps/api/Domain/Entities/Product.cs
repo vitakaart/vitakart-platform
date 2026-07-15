@@ -1,7 +1,6 @@
 // File: apps/api/Domain/Entities/Product.cs
-// Main product table
-// Products belong to a category and a tenant
-// Actual price and stock lives in ProductVariant (we'll add later)
+// Enhanced with stock, image, discount, SKU
+// Future ready — variants & images will be separate entities later
 
 using api.Domain.Common;
 
@@ -21,6 +20,9 @@ public class Product : BaseEntity, ITenantEntity
     // URL slug — e.g., "whey-protein-1kg-chocolate"
     public string Slug { get; set; } = string.Empty;
 
+    // Stock keeping unit — unique product code
+    public string? Sku { get; set; }
+
     // Full product description
     public string? Description { get; set; }
 
@@ -30,8 +32,17 @@ public class Product : BaseEntity, ITenantEntity
     // Brand name — e.g., "MuscleBlaze"
     public string? Brand { get; set; }
 
-    // Base price (variants can have different prices)
+    // Regular price
     public decimal Price { get; set; }
+
+    // Discounted/sale price (optional)
+    public decimal? DiscountPrice { get; set; }
+
+    // Main product image URL
+    public string? ImageUrl { get; set; }
+
+    // Stock quantity
+    public int StockQuantity { get; set; } = 0;
 
     // Is this a featured product?
     public bool IsFeatured { get; set; } = false;
@@ -46,4 +57,7 @@ public class Product : BaseEntity, ITenantEntity
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
     public string? MetaKeywords { get; set; }
+
+    // Navigation property
+    public Category Category { get; set; } = null!;
 }

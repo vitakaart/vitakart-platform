@@ -1,9 +1,8 @@
 // File: apps/api/API/Middleware/TenantResolverMiddleware.cs
-// This middleware runs on EVERY request
-// It reads tenant info from request header
-// Then sets it in TenantContext for later use
+// Updated: SuperAdmin can bypass tenant header (access all tenants)
 
 using api.Application.Interfaces;
+using api.Domain.Enums;
 using api.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,21 +22,41 @@ public class TenantResolverMiddleware
         ITenantContext tenantContext,
         AppDbContext dbContext)
     {
-        // Skip tenant check for these paths
+        // Skip tenant check for public/system paths
         var path = context.Request.Path.Value?.ToLower() ?? "";
         
         if (path.StartsWith("/api/tenants") || 
             path.StartsWith("/openapi") ||
-            path.StartsWith("/swagger"))
+            path.StartsWith("/swagger") ||
+            path.StartsWith("/scalar"))
         {
             await _next(context);
             return;
         }
 
-        // Try to get tenant from header
-        // Frontend sends: X-Tenant-Slug: vitakart
+        // Check if user is SuperAdmin (bypass tenant header requirement)
+        var isSuperAdmin = false;
+        if (context.User?.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = context.User.FindFirst("role")?.Value;
+            if (!string.IsNullOrEmpty(roleClaim))
+            {
+                var role = UserRoleExtensions.ParseRole(roleClaim);
+                isSuperAdmin = role == UserRole.SuperAdmin;
+            }
+        }
+
+        // Get tenant slug from header
         var tenantSlug = context.Request.Headers["X-Tenant-Slug"].FirstOrDefault();
 
+        // SuperAdmin can work without tenant header (accesses all tenants)
+        if (isSuperAdmin && string.IsNullOrEmpty(tenantSlug))
+        {
+            await _next(context);
+            return;
+        }
+
+        // For everyone else — tenant header required
         if (string.IsNullOrEmpty(tenantSlug))
         {
             context.Response.StatusCode = 400;

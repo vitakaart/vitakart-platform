@@ -1,9 +1,9 @@
 // File: apps/api/Domain/Entities/User.cs
-// User table — customers, admins, sellers
-// Every user belongs to a tenant (brand)
-// So one email can register on multiple brands
+// Updated: Role changed from string to UserRole enum (type-safe)
+// All existing fields preserved
 
 using api.Domain.Common;
+using api.Domain.Enums;
 
 namespace api.Domain.Entities;
 
@@ -24,8 +24,8 @@ public class User : BaseEntity, ITenantEntity
     // Phone number
     public string? Phone { get; set; }
 
-    // Role: superadmin, admin, seller, customer
-    public string Role { get; set; } = "customer";
+    // Role: Customer, Vendor, Admin, SuperAdmin (type-safe enum)
+    public UserRole Role { get; set; } = UserRole.Customer;
 
     // Is email verified?
     public bool IsVerified { get; set; } = false;
@@ -38,4 +38,7 @@ public class User : BaseEntity, ITenantEntity
 
     // Profile picture URL
     public string? ProfileImage { get; set; }
+
+    // Optional: track last login for security
+    public DateTime? LastLoginAt { get; set; }
 }

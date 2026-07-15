@@ -1,5 +1,7 @@
 // File: apps/api/Application/DTOs/AuthDto.cs
-// All auth related DTOs — register, login, response
+// Added: ChangeRoleDto for role management
+
+using api.Domain.Enums;
 
 namespace api.Application.DTOs;
 
@@ -35,4 +37,23 @@ public class UserInfoDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public bool IsVerified { get; set; }
+}
+
+// Refresh token request
+public class RefreshTokenRequestDto
+{
+    public string RefreshToken { get; set; } = string.Empty;
+}
+
+// Logout request
+public class LogoutRequestDto
+{
+    public string RefreshToken { get; set; } = string.Empty;
+}
+
+// NEW — Change user role (SuperAdmin/Admin only)
+public class ChangeRoleDto
+{
+    public Guid UserId { get; set; }
+    public UserRole NewRole { get; set; }
 }
