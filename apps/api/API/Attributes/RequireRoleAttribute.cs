@@ -1,12 +1,11 @@
 // File: apps/api/API/Attributes/RequireRoleAttribute.cs
-// Custom attribute for role-based endpoint protection
-// Usage: [RequireRole(UserRole.Admin)]
-// Supports hierarchy - Admin also passes RequireRole(Customer)
+// Fixed: Check both "role" and ClaimTypes.Role
 
 using api.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Security.Claims;
 
 namespace api.API.Attributes;
 
@@ -16,18 +15,12 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
     private readonly UserRole _minimumRole;
     private readonly bool _exactMatch;
 
-    // Constructor 1: minimum role (hierarchy)
-    // Example: [RequireRole(UserRole.Admin)] 
-    // → Admin AND SuperAdmin can access
     public RequireRoleAttribute(UserRole minimumRole)
     {
         _minimumRole = minimumRole;
         _exactMatch = false;
     }
 
-    // Constructor 2: exact role match
-    // Example: [RequireRole(UserRole.Admin, exactMatch: true)]
-    // → Only Admin (not SuperAdmin)
     public RequireRoleAttribute(UserRole role, bool exactMatch)
     {
         _minimumRole = role;
@@ -36,7 +29,6 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        // Check if user is authenticated
         var user = context.HttpContext.User;
 
         if (user?.Identity?.IsAuthenticated != true)
@@ -48,8 +40,10 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        // Get role from JWT claim
-        var roleClaim = user.FindFirst("role")?.Value;
+        // FIXED: Try multiple claim names to find role
+        var roleClaim = user.FindFirst("role")?.Value
+                     ?? user.FindFirst(ClaimTypes.Role)?.Value
+                     ?? user.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
         if (string.IsNullOrEmpty(roleClaim))
         {
@@ -63,10 +57,8 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
             return;
         }
 
-        // Parse role
         var userRole = UserRoleExtensions.ParseRole(roleClaim);
 
-        // Check permission
         bool hasAccess = _exactMatch
             ? userRole == _minimumRole
             : userRole.HasPermissionOf(_minimumRole);

@@ -1,21 +1,30 @@
 // File: apps/api/Program.cs
-// Added CORS configuration - clean & scalable
+// Fully secured version with rate limiting, security headers, HTTPS enforcement
+// Production-ready configuration
 
 using api.API.Middleware;
+using api.API.RateLimiting;
 using api.Application.Interfaces;
 using api.Application.Services;
 using api.Infrastructure.Data;
+using api.Infrastructure.Repositories;
 using DotNetEnv;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 
 Env.Load();
 
-// Clear default claim mapping BEFORE anything else
+// IMPORTANT: Clear default claim mapping BEFORE anything else
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,9 +35,33 @@ var builder = WebApplication.CreateBuilder(args);
 const string CorsPolicyName = "VitakartCorsPolicy";
 
 // ============================================
-// REGISTER SERVICES
+// REQUEST SIZE LIMIT (Prevent DoS via large uploads)
 // ============================================
+var maxBodySizeMb = int.Parse(Environment.GetEnvironmentVariable("MAX_REQUEST_BODY_SIZE_MB") ?? "10");
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = maxBodySizeMb * 1024 * 1024;
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = maxBodySizeMb * 1024 * 1024;
+    options.AddServerHeader = false; // hide the server version for security
+});
+
+
+// ============================================
+// FORWARDED HEADERS (accurate IP behind proxies)
+// ============================================
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
+// ============================================
+// CONTROLLERS + ROUTING
+// ============================================
 builder.Services.AddControllers();
 
 builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteOptions>(options =>
@@ -36,10 +69,11 @@ builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteOptions>(options =>
     options.LowercaseUrls = true;
 });
 
-// OpenAPI/Scalar setup
 builder.Services.AddOpenApi();
 
-// Database
+// ============================================
+// DATABASE
+// ============================================
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
@@ -50,15 +84,35 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// Application services
+// ============================================
+// SERVICES & REPOSITORIES
+// ============================================
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
+// Repositories
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<ITenantRepository, TenantRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // ============================================
-// CORS CONFIGURATION
+// FLUENT VALIDATION
+// ============================================
+builder.Services.AddFluentValidationAutoValidation(config =>
+{
+    config.DisableDataAnnotationsValidation = true;
+});
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// ============================================
+// CORS
 // ============================================
 var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS")
     ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -71,7 +125,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); // Cookies ke liye future mein
+              .AllowCredentials();
     });
 });
 
@@ -96,23 +150,148 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             NameClaimType = "sub",
-            RoleClaimType = "role"
+            RoleClaimType = "role",
+            ClockSkew = TimeSpan.FromMinutes(1) // Stricter than default 5 min
         };
     });
 
 builder.Services.AddAuthorization();
 
+// ============================================
+// RATE LIMITING (Anti brute-force & DDoS)
+// ============================================
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429;
+
+    // Custom response when rate limit exceeded
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        context.HttpContext.Response.ContentType = "application/json";
+
+        var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry)
+            ? (int)retry.TotalSeconds
+            : 60;
+
+        context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
+
+        var response = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            success = false,
+            statusCode = 429,
+            message = "Too many requests. Please try again later.",
+            retryAfterSeconds = retryAfter,
+            timestamp = DateTime.UtcNow
+        });
+
+        await context.HttpContext.Response.WriteAsync(response, cancellationToken);
+    };
+
+    // GLOBAL policy — applies to all endpoints
+    options.AddPolicy(RateLimitPolicies.Global, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetClientKey(httpContext),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = RateLimitPolicies.GetGlobalPermit(),
+                Window = TimeSpan.FromSeconds(RateLimitPolicies.GetGlobalWindow()),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    // AUTH policy — strict for login/register (anti brute-force)
+    options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetClientKey(httpContext),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = RateLimitPolicies.GetAuthPermit(),
+                Window = TimeSpan.FromSeconds(RateLimitPolicies.GetAuthWindow()),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    // READ policy — higher limit for GET requests
+    options.AddPolicy(RateLimitPolicies.Read, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetClientKey(httpContext),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = RateLimitPolicies.GetReadPermit(),
+                Window = TimeSpan.FromSeconds(RateLimitPolicies.GetReadWindow()),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+
+    // WRITE policy — medium limit for POST/PUT/DELETE
+    options.AddPolicy(RateLimitPolicies.Write, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetClientKey(httpContext),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = RateLimitPolicies.GetWritePermit(),
+                Window = TimeSpan.FromSeconds(RateLimitPolicies.GetWriteWindow()),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+});
+
+// Helper: Get client identifier (user ID if logged in, else IP)
+static string GetClientKey(HttpContext context)
+{
+    var userId = context.User?.FindFirst("sub")?.Value;
+    if (!string.IsNullOrEmpty(userId))
+    {
+        return $"user:{userId}";
+    }
+    return $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+}
+
+// ============================================
+// HTTPS ENFORCEMENT (Production only)
+// ============================================
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHsts(options =>
+    {
+        options.Preload = true;
+        options.IncludeSubDomains = true;
+        options.MaxAge = TimeSpan.FromDays(365);
+    });
+
+    builder.Services.AddHttpsRedirection(options =>
+    {
+        options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+        options.HttpsPort = 443;
+    });
+}
+
 var app = builder.Build();
+
 // ============================================
 // SEED DATABASE (auto-create SuperAdmin)
 // ============================================
 await DatabaseSeeder.SeedAsync(app.Services);
 
 // ============================================
-// MIDDLEWARE PIPELINE (Order matters!)
+// MIDDLEWARE PIPELINE (ORDER MATTERS!)
 // ============================================
 
-// 1. Development tools
+// 1. Forwarded headers (behind proxy support)
+app.UseForwardedHeaders();
+
+// 2. Security headers (add to all responses)
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// 3. HTTPS + HSTS (production only)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+// 4. Dev tools (Scalar UI + OpenAPI)
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -124,23 +303,23 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// 2. Global exception handler (catches everything)
+// 5. Global exception handler (catch all errors)
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// 3. HTTPS redirect
-app.UseHttpsRedirection();
+// 6. Rate limiting (BEFORE auth to prevent bypass)
+app.UseRateLimiter();
 
-// 4. CORS (before auth & routing)
+// 7. CORS
 app.UseCors(CorsPolicyName);
 
-// 5. Tenant resolver (must be before auth)
+// 8. Tenant resolver (BEFORE auth)
 app.UseMiddleware<TenantResolverMiddleware>();
 
-// 6. Authentication & Authorization
+// 9. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Map controllers
-app.MapControllers();
+// 10. Map controllers with global rate limit
+app.MapControllers().RequireRateLimiting(RateLimitPolicies.Global);
 
 app.Run();

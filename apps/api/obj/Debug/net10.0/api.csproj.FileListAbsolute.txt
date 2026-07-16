@@ -134,3 +134,6 @@ D:\projects\vitekart\apps\api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocol
 D:\projects\vitekart\apps\api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 D:\projects\vitekart\apps\api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 D:\projects\vitekart\apps\api\bin\Debug\net10.0\Scalar.AspNetCore.dll
+D:\projects\vitekart\apps\api\bin\Debug\net10.0\FluentValidation.dll
+D:\projects\vitekart\apps\api\bin\Debug\net10.0\FluentValidation.AspNetCore.dll
+D:\projects\vitekart\apps\api\bin\Debug\net10.0\FluentValidation.DependencyInjectionExtensions.dll

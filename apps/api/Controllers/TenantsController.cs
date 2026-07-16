@@ -1,14 +1,13 @@
 // File: apps/api/Controllers/TenantsController.cs
-// Updated: Only SuperAdmin can create/manage tenants
+// Updated: Uses ITenantRepository instead of AppDbContext
 
 using api.API.Attributes;
 using api.Application.DTOs;
+using api.Application.Interfaces;
 using api.Domain.Entities;
 using api.Domain.Enums;
-using api.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers;
 
@@ -16,11 +15,11 @@ namespace api.Controllers;
 [Route("api/[controller]")]
 public class TenantsController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public TenantsController(AppDbContext context)
+    public TenantsController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     // GET all tenants — SuperAdmin only
@@ -29,58 +28,52 @@ public class TenantsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<TenantDto>>> GetAll()
     {
-        var tenants = await _context.Tenants
-            .Where(t => !t.IsDeleted)
-            .Select(t => new TenantDto
-            {
-                Id = t.Id,
-                Name = t.Name,
-                Slug = t.Slug,
-                Domain = t.Domain,
-                Status = t.Status,
-                CreatedAt = t.CreatedAt
-            })
-            .ToListAsync();
+        var tenants = await _unitOfWork.Tenants.GetAllAsync();
 
-        return Ok(tenants);
+        var result = tenants.Select(t => new TenantDto
+        {
+            Id = t.Id,
+            Name = t.Name,
+            Slug = t.Slug,
+            Domain = t.Domain,
+            Status = t.Status,
+            CreatedAt = t.CreatedAt
+        }).ToList();
+
+        return Ok(result);
     }
 
-    // GET tenant by ID — SuperAdmin only
+    // GET by ID — SuperAdmin only
     [Authorize]
     [RequireRole(UserRole.SuperAdmin)]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TenantDto>> GetById(Guid id)
     {
-        var tenant = await _context.Tenants
-            .Where(t => t.Id == id && !t.IsDeleted)
-            .Select(t => new TenantDto
-            {
-                Id = t.Id,
-                Name = t.Name,
-                Slug = t.Slug,
-                Domain = t.Domain,
-                Status = t.Status,
-                CreatedAt = t.CreatedAt
-            })
-            .FirstOrDefaultAsync();
+        var tenant = await _unitOfWork.Tenants.GetByIdAsync(id);
 
         if (tenant == null)
         {
             return NotFound(new { message = "Tenant not found" });
         }
 
-        return Ok(tenant);
+        return Ok(new TenantDto
+        {
+            Id = tenant.Id,
+            Name = tenant.Name,
+            Slug = tenant.Slug,
+            Domain = tenant.Domain,
+            Status = tenant.Status,
+            CreatedAt = tenant.CreatedAt
+        });
     }
 
-    // POST create tenant — SuperAdmin only
+    // POST create — SuperAdmin only
     [Authorize]
     [RequireRole(UserRole.SuperAdmin)]
     [HttpPost]
     public async Task<ActionResult<TenantDto>> Create(CreateTenantDto dto)
     {
-        var slugExists = await _context.Tenants
-            .AnyAsync(t => t.Slug == dto.Slug && !t.IsDeleted);
-
+        var slugExists = await _unitOfWork.Tenants.SlugExistsAsync(dto.Slug);
         if (slugExists)
         {
             return BadRequest(new { message = $"Tenant with slug '{dto.Slug}' already exists" });
@@ -94,8 +87,8 @@ public class TenantsController : ControllerBase
             Status = "active"
         };
 
-        _context.Tenants.Add(tenant);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Tenants.AddAsync(tenant);
+        await _unitOfWork.SaveChangesAsync();
 
         var result = new TenantDto
         {

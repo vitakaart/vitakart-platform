@@ -1,28 +1,37 @@
 // File: apps/api/Application/Services/AuthService.cs
-// Complete file with ALL methods — nothing missing
+// Complete file with account lockout + brute force protection
+// All methods included — safe to fully replace
 
 using api.Application.DTOs;
 using api.Application.Interfaces;
 using api.Domain.Entities;
 using api.Domain.Enums;
 using api.Domain.Exceptions;
-using api.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using api.Infrastructure.Extensions;
 
 namespace api.Application.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtService _jwtService;
     private readonly ITenantContext _tenantContext;
 
+    // ==========================================
+    // ACCOUNT LOCKOUT CONFIG (from .env)
+    // ==========================================
+    private static int MaxFailedAttempts =>
+        int.Parse(Environment.GetEnvironmentVariable("LOCKOUT_MAX_FAILED_ATTEMPTS") ?? "5");
+
+    private static int LockoutDurationMinutes =>
+        int.Parse(Environment.GetEnvironmentVariable("LOCKOUT_DURATION_MINUTES") ?? "15");
+
     public AuthService(
-        AppDbContext context, 
+        IUnitOfWork unitOfWork,
         IJwtService jwtService,
         ITenantContext tenantContext)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _tenantContext = tenantContext;
     }
@@ -39,9 +48,8 @@ public class AuthService : IAuthService
 
         var tenantId = _tenantContext.TenantId!.Value;
 
-        var emailExists = await _context.Users
-            .AnyAsync(u => u.Email == dto.Email && u.TenantId == tenantId);
-
+        // Check email uniqueness
+        var emailExists = await _unitOfWork.Users.EmailExistsAsync(dto.Email, tenantId);
         if (emailExists)
         {
             throw new ValidationException("Email already registered");
@@ -61,8 +69,8 @@ public class AuthService : IAuthService
             IsActive = true
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Users.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
 
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = await CreateRefreshTokenAsync(user.Id, tenantId, deviceInfo, ipAddress);
@@ -76,7 +84,7 @@ public class AuthService : IAuthService
     }
 
     // ==========================================
-    // LOGIN
+    // LOGIN (with account lockout)
     // ==========================================
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto, string? deviceInfo, string? ipAddress)
     {
@@ -87,15 +95,21 @@ public class AuthService : IAuthService
 
         var tenantId = _tenantContext.TenantId!.Value;
 
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => 
-                u.Email == dto.Email && 
-                u.TenantId == tenantId && 
-                !u.IsDeleted);
+        var user = await _unitOfWork.Users.GetByEmailAndTenantAsync(dto.Email, tenantId);
 
         if (user == null)
         {
             throw new UnauthorizedException("Invalid email or password");
+        }
+
+        // ==========================================
+        // ACCOUNT LOCKOUT CHECK
+        // ==========================================
+        if (user.IsLocked)
+        {
+            var minutesLeft = (int)Math.Ceiling((user.LockedUntil!.Value - DateTime.UtcNow).TotalMinutes);
+            throw new UnauthorizedException(
+                $"Account locked due to too many failed attempts. Try again in {minutesLeft} minute(s).");
         }
 
         if (!user.IsActive)
@@ -103,15 +117,44 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Account is deactivated");
         }
 
+        // ==========================================
+        // PASSWORD VERIFICATION
+        // ==========================================
         var passwordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
         if (!passwordValid)
         {
-            throw new UnauthorizedException("Invalid email or password");
+            // Increment failed attempts
+            user.FailedLoginAttempts++;
+
+            // Lock account if threshold reached
+            if (user.FailedLoginAttempts >= MaxFailedAttempts)
+            {
+                user.LockedUntil = DateTime.UtcNow.AddMinutes(LockoutDurationMinutes);
+                _unitOfWork.Users.Update(user);
+                await _unitOfWork.SaveChangesAsync();
+
+                throw new UnauthorizedException(
+                    $"Account locked due to {MaxFailedAttempts} failed attempts. " +
+                    $"Try again in {LockoutDurationMinutes} minutes.");
+            }
+
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            var attemptsLeft = MaxFailedAttempts - user.FailedLoginAttempts;
+            throw new UnauthorizedException(
+                $"Invalid email or password. {attemptsLeft} attempt(s) remaining before lockout.");
         }
 
+        // ==========================================
+        // SUCCESSFUL LOGIN — Reset counters
+        // ==========================================
+        user.FailedLoginAttempts = 0;
+        user.LockedUntil = null;
         user.LastLoginAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
 
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = await CreateRefreshTokenAsync(user.Id, tenantId, deviceInfo, ipAddress);
@@ -125,13 +168,11 @@ public class AuthService : IAuthService
     }
 
     // ==========================================
-    // GET CURRENT USER (Ye Missing Tha!)
+    // GET CURRENT USER
     // ==========================================
     public async Task<UserInfoDto> GetCurrentUserAsync(Guid userId)
     {
-        var user = await _context.Users
-            .Where(u => u.Id == userId && !u.IsDeleted && u.IsActive)
-            .FirstOrDefaultAsync();
+        var user = await _unitOfWork.Users.GetFirstAsync(u => u.Id == userId && u.IsActive);
 
         if (user == null)
         {
@@ -151,9 +192,7 @@ public class AuthService : IAuthService
             throw new ValidationException("Refresh token is required");
         }
 
-        var existingToken = await _context.RefreshTokens
-            .Include(rt => rt.User)
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+        var existingToken = await _unitOfWork.RefreshTokens.GetByTokenWithUserAsync(refreshToken);
 
         if (existingToken == null)
         {
@@ -175,7 +214,7 @@ public class AuthService : IAuthService
 
         existingToken.RevokedAt = DateTime.UtcNow;
         existingToken.ReplacedByToken = newRefreshToken;
-        existingToken.UpdatedAt = DateTime.UtcNow;
+        _unitOfWork.RefreshTokens.Update(existingToken);
 
         var newTokenEntity = new RefreshToken
         {
@@ -187,8 +226,8 @@ public class AuthService : IAuthService
             IpAddress = ipAddress
         };
 
-        _context.RefreshTokens.Add(newTokenEntity);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.RefreshTokens.AddAsync(newTokenEntity);
+        await _unitOfWork.SaveChangesAsync();
 
         var newAccessToken = _jwtService.GenerateAccessToken(existingToken.User);
 
@@ -210,19 +249,18 @@ public class AuthService : IAuthService
             throw new ValidationException("Refresh token is required");
         }
 
-        var token = await _context.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+        var token = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
 
         if (token == null)
         {
-            return;
+            return; // Silent fail
         }
 
         if (token.IsActive)
         {
             token.RevokedAt = DateTime.UtcNow;
-            token.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            _unitOfWork.RefreshTokens.Update(token);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 
@@ -231,22 +269,30 @@ public class AuthService : IAuthService
     // ==========================================
     public async Task<UserInfoDto> ChangeUserRoleAsync(Guid currentUserId, UserRole currentUserRole, ChangeRoleDto dto)
     {
-        // Only SuperAdmin and Admin can change roles
         if (currentUserRole != UserRole.SuperAdmin && currentUserRole != UserRole.Admin)
         {
             throw new UnauthorizedException("Only Admin or SuperAdmin can change roles");
         }
 
-        // Find target user
-        var targetUser = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == dto.UserId && !u.IsDeleted);
+        // SuperAdmin can search across tenants — use unfiltered
+        User? targetUser;
+        if (currentUserRole == UserRole.SuperAdmin)
+        {
+            targetUser = await _unitOfWork.Users
+                .QueryUnfiltered()
+                .Where(u => !u.IsDeleted)
+                .FirstOrDefaultAsyncSafe(u => u.Id == dto.UserId);
+        }
+        else
+        {
+            targetUser = await _unitOfWork.Users.GetByIdAsync(dto.UserId);
+        }
 
         if (targetUser == null)
         {
             throw new NotFoundException("User not found");
         }
 
-        // Prevent self-role change
         if (targetUser.Id == currentUserId)
         {
             throw new ValidationException("You cannot change your own role");
@@ -256,7 +302,7 @@ public class AuthService : IAuthService
         if (currentUserRole == UserRole.Admin)
         {
             var tenantId = _tenantContext.TenantId!.Value;
-            
+
             if (targetUser.TenantId != tenantId)
             {
                 throw new UnauthorizedException("You can only change roles in your own tenant");
@@ -273,11 +319,9 @@ public class AuthService : IAuthService
             }
         }
 
-        // Update role
         targetUser.Role = dto.NewRole;
-        targetUser.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        _unitOfWork.Users.Update(targetUser);
+        await _unitOfWork.SaveChangesAsync();
 
         return MapToUserInfo(targetUser);
     }
@@ -300,8 +344,8 @@ public class AuthService : IAuthService
             IpAddress = ipAddress
         };
 
-        _context.RefreshTokens.Add(tokenEntity);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.RefreshTokens.AddAsync(tokenEntity);
+        await _unitOfWork.SaveChangesAsync();
 
         return refreshToken;
     }

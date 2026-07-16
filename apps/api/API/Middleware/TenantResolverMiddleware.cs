@@ -5,6 +5,7 @@ using api.Application.Interfaces;
 using api.Domain.Enums;
 using api.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace api.API.Middleware;
 
@@ -38,7 +39,8 @@ public class TenantResolverMiddleware
         var isSuperAdmin = false;
         if (context.User?.Identity?.IsAuthenticated == true)
         {
-            var roleClaim = context.User.FindFirst("role")?.Value;
+            var roleClaim = context.User.FindFirst("role")?.Value
+             ?? context.User.FindFirst(ClaimTypes.Role)?.Value;
             if (!string.IsNullOrEmpty(roleClaim))
             {
                 var role = UserRoleExtensions.ParseRole(roleClaim);

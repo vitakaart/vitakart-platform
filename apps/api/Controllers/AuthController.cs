@@ -1,12 +1,14 @@
 // File: apps/api/Controllers/AuthController.cs
-// Added: change-role endpoint with role protection
+// Updated with strict rate limiting on auth endpoints
 
 using api.API.Attributes;
+using api.API.RateLimiting;
 using api.Application.DTOs;
 using api.Application.Interfaces;
 using api.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace api.Controllers;
@@ -22,7 +24,8 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    // POST: api/auth/register
+    // POST: api/auth/register — STRICT rate limit (5 per minute)
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
@@ -33,7 +36,8 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST: api/auth/login
+    // POST: api/auth/login — STRICT rate limit (anti brute-force)
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
@@ -44,7 +48,8 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST: api/auth/refresh
+    // POST: api/auth/refresh — STRICT rate limit
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("refresh")]
     public async Task<ActionResult<AuthResponseDto>> RefreshToken(RefreshTokenRequestDto dto)
     {
@@ -63,7 +68,7 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Logged out successfully" });
     }
 
-    // GET: api/auth/me — PROTECTED
+    // GET: api/auth/me
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<UserInfoDto>> GetCurrentUser()
@@ -78,11 +83,11 @@ public class AuthController : ControllerBase
 
         var userId = Guid.Parse(userIdClaim);
         var user = await _authService.GetCurrentUserAsync(userId);
-
         return Ok(user);
     }
 
-    // POST: api/auth/change-role — Admin+ only
+    // POST: api/auth/change-role — WRITE rate limit
+    [EnableRateLimiting(RateLimitPolicies.Write)]
     [Authorize]
     [RequireRole(UserRole.Admin)]
     [HttpPost("change-role")]
@@ -90,7 +95,8 @@ public class AuthController : ControllerBase
     {
         var userIdClaim = User.FindFirst("sub")?.Value
                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var roleClaim = User.FindFirst("role")?.Value;
+        var roleClaim = User.FindFirst("role")?.Value
+                     ?? User.FindFirst(ClaimTypes.Role)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || string.IsNullOrEmpty(roleClaim))
         {
@@ -104,7 +110,6 @@ public class AuthController : ControllerBase
         return Ok(user);
     }
 
-    // PRIVATE HELPER
     private string? GetClientIp()
     {
         return HttpContext.Connection.RemoteIpAddress?.ToString();

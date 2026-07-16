@@ -1,107 +1,68 @@
 // File: apps/api/Application/Services/CategoryService.cs
-// Full category CRUD with multi-tenant support
+// Rewritten to use IUnitOfWork
 
 using api.Application.DTOs;
 using api.Application.Interfaces;
 using api.Domain.Entities;
 using api.Domain.Exceptions;
-using api.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Application.Services;
 
 public class CategoryService : ICategoryService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantContext _tenantContext;
 
-    public CategoryService(AppDbContext context, ITenantContext tenantContext)
+    public CategoryService(IUnitOfWork unitOfWork, ITenantContext tenantContext)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _tenantContext = tenantContext;
     }
 
-    // Get all categories (flat list, sorted)
+    // Get all categories
     public async Task<List<CategoryDto>> GetAllAsync()
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var categories = await _context.Categories
-            .Include(c => c.ParentCategory)
-            .Include(c => c.SubCategories)
-            .Where(c => c.TenantId == tenantId && !c.IsDeleted)
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name)
-            .ToListAsync();
-
+        var categories = await _unitOfWork.Categories.GetAllWithRelationsAsync();
         return categories.Select(MapToDto).ToList();
     }
 
-    // Get top-level categories (no parent)
+    // Get top-level categories
     public async Task<List<CategoryDto>> GetTopLevelAsync()
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var categories = await _context.Categories
-            .Include(c => c.SubCategories)
-            .Where(c => c.TenantId == tenantId 
-                     && !c.IsDeleted 
-                     && c.ParentCategoryId == null)
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name)
-            .ToListAsync();
-
+        var categories = await _unitOfWork.Categories.GetTopLevelAsync();
         return categories.Select(MapToDto).ToList();
     }
 
-    // Get sub-categories of a parent
+    // Get sub-categories
     public async Task<List<CategoryDto>> GetSubCategoriesAsync(Guid parentId)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var categories = await _context.Categories
-            .Include(c => c.ParentCategory)
-            .Include(c => c.SubCategories)
-            .Where(c => c.TenantId == tenantId 
-                     && !c.IsDeleted 
-                     && c.ParentCategoryId == parentId)
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name)
-            .ToListAsync();
-
+        var categories = await _unitOfWork.Categories.GetSubCategoriesAsync(parentId);
         return categories.Select(MapToDto).ToList();
     }
 
-    // Get full category tree (recursive)
+    // Get tree structure
     public async Task<List<CategoryTreeDto>> GetTreeAsync()
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        // Load all categories at once
-        var allCategories = await _context.Categories
-            .Where(c => c.TenantId == tenantId && !c.IsDeleted)
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name)
-            .ToListAsync();
-
-        // Build tree from top-level
+        var allCategories = await _unitOfWork.Categories.GetAllAsync();
         var topLevel = allCategories.Where(c => c.ParentCategoryId == null);
 
         return topLevel.Select(c => BuildTree(c, allCategories)).ToList();
     }
 
-    // Get category by ID
+    // Get by ID
     public async Task<CategoryDto> GetByIdAsync(Guid id)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var category = await _context.Categories
-            .Include(c => c.ParentCategory)
-            .Include(c => c.SubCategories)
-            .FirstOrDefaultAsync(c => c.Id == id 
-                                   && c.TenantId == tenantId 
-                                   && !c.IsDeleted);
-
+        var category = await _unitOfWork.Categories.GetByIdWithRelationsAsync(id);
         if (category == null)
         {
             throw new NotFoundException("Category not found");
@@ -110,18 +71,12 @@ public class CategoryService : ICategoryService
         return MapToDto(category);
     }
 
-    // Get category by slug
+    // Get by slug
     public async Task<CategoryDto> GetBySlugAsync(string slug)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var category = await _context.Categories
-            .Include(c => c.ParentCategory)
-            .Include(c => c.SubCategories)
-            .FirstOrDefaultAsync(c => c.Slug == slug 
-                                   && c.TenantId == tenantId 
-                                   && !c.IsDeleted);
-
+        var category = await _unitOfWork.Categories.GetBySlugAsync(slug);
         if (category == null)
         {
             throw new NotFoundException($"Category with slug '{slug}' not found");
@@ -130,29 +85,23 @@ public class CategoryService : ICategoryService
         return MapToDto(category);
     }
 
-    // Create new category
+    // Create
     public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        // Check slug uniqueness within tenant
-        var slugExists = await _context.Categories
-            .AnyAsync(c => c.Slug == dto.Slug 
-                        && c.TenantId == tenantId 
-                        && !c.IsDeleted);
-
+        // Check slug uniqueness
+        var slugExists = await _unitOfWork.Categories.SlugExistsAsync(dto.Slug);
         if (slugExists)
         {
             throw new ValidationException($"Category with slug '{dto.Slug}' already exists");
         }
 
-        // Validate parent category if provided
+        // Validate parent
         if (dto.ParentCategoryId.HasValue)
         {
-            var parentExists = await _context.Categories
-                .AnyAsync(c => c.Id == dto.ParentCategoryId.Value 
-                            && c.TenantId == tenantId 
-                            && !c.IsDeleted);
+            var parentExists = await _unitOfWork.Categories
+                .ExistsAsync(c => c.Id == dto.ParentCategoryId.Value);
 
             if (!parentExists)
             {
@@ -162,7 +111,6 @@ public class CategoryService : ICategoryService
 
         var category = new Category
         {
-            TenantId = tenantId,
             ParentCategoryId = dto.ParentCategoryId,
             Name = dto.Name,
             Slug = dto.Slug,
@@ -174,41 +122,31 @@ public class CategoryService : ICategoryService
             MetaDescription = dto.MetaDescription
         };
 
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Categories.AddAsync(category);
+        await _unitOfWork.SaveChangesAsync();
 
-        // Reload with navigation properties
         return await GetByIdAsync(category.Id);
     }
 
-    // Update category
+    // Update
     public async Task<CategoryDto> UpdateAsync(Guid id, UpdateCategoryDto dto)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(c => c.Id == id 
-                                   && c.TenantId == tenantId 
-                                   && !c.IsDeleted);
-
+        var category = await _unitOfWork.Categories.GetByIdAsync(id);
         if (category == null)
         {
             throw new NotFoundException("Category not found");
         }
 
-        // Check slug uniqueness (exclude current category)
-        var slugExists = await _context.Categories
-            .AnyAsync(c => c.Slug == dto.Slug 
-                        && c.TenantId == tenantId 
-                        && c.Id != id 
-                        && !c.IsDeleted);
-
+        // Check slug uniqueness
+        var slugExists = await _unitOfWork.Categories.SlugExistsAsync(dto.Slug, id);
         if (slugExists)
         {
             throw new ValidationException($"Category with slug '{dto.Slug}' already exists");
         }
 
-        // Validate parent (can't be self)
+        // Validate parent
         if (dto.ParentCategoryId.HasValue)
         {
             if (dto.ParentCategoryId.Value == id)
@@ -216,10 +154,8 @@ public class CategoryService : ICategoryService
                 throw new ValidationException("Category cannot be its own parent");
             }
 
-            var parentExists = await _context.Categories
-                .AnyAsync(c => c.Id == dto.ParentCategoryId.Value 
-                            && c.TenantId == tenantId 
-                            && !c.IsDeleted);
+            var parentExists = await _unitOfWork.Categories
+                .ExistsAsync(c => c.Id == dto.ParentCategoryId.Value);
 
             if (!parentExists)
             {
@@ -237,54 +173,45 @@ public class CategoryService : ICategoryService
         category.ParentCategoryId = dto.ParentCategoryId;
         category.MetaTitle = dto.MetaTitle;
         category.MetaDescription = dto.MetaDescription;
-        category.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Categories.Update(category);
+        await _unitOfWork.SaveChangesAsync();
 
         return await GetByIdAsync(category.Id);
     }
 
-    // Delete category (soft delete)
+    // Delete
     public async Task DeleteAsync(Guid id)
     {
-        var tenantId = GetTenantId();
+        ValidateTenant();
 
-        var category = await _context.Categories
-            .Include(c => c.SubCategories)
-            .FirstOrDefaultAsync(c => c.Id == id 
-                                   && c.TenantId == tenantId 
-                                   && !c.IsDeleted);
-
+        var category = await _unitOfWork.Categories.GetByIdAsync(id);
         if (category == null)
         {
             throw new NotFoundException("Category not found");
         }
 
-        // Check if has active sub-categories
-        var hasSubCategories = category.SubCategories.Any(sc => !sc.IsDeleted);
+        // Check sub-categories
+        var hasSubCategories = await _unitOfWork.Categories.HasSubCategoriesAsync(id);
         if (hasSubCategories)
         {
             throw new ValidationException("Cannot delete category with sub-categories. Delete sub-categories first.");
         }
 
-        // Soft delete
-        category.IsDeleted = true;
-        category.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        _unitOfWork.Categories.SoftDelete(category);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     // ==========================================
     // PRIVATE HELPERS
     // ==========================================
 
-    private Guid GetTenantId()
+    private void ValidateTenant()
     {
         if (!_tenantContext.IsResolved)
         {
             throw new ValidationException("Tenant not resolved");
         }
-        return _tenantContext.TenantId!.Value;
     }
 
     private CategoryDto MapToDto(Category category)
