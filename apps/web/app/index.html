@@ -1,435 +1,412 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Screen</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Poppins:wght@100..900&family=Fira+Code:wght@300..700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-    <style type="text/tailwindcss">
-      @import "tailwindcss";
-      @theme inline {
-        --color-background: var(--background);
-        --color-foreground: var(--foreground);
-        --color-primary: var(--primary);
-        --color-primary-foreground: var(--primary-foreground);
-        --color-secondary: var(--secondary);
-        --color-secondary-foreground: var(--secondary-foreground);
-        --color-tertiary: var(--tertiary);
-        --color-muted: var(--muted);
-        --color-muted-foreground: var(--muted-foreground);
-        --color-accent: var(--accent);
-        --color-destructive: var(--destructive);
-        --color-card: var(--card);
-        --color-card-foreground: var(--card-foreground);
-        --color-border: var(--border);
-        --color-input: var(--input);
-        --color-ring: var(--ring);
-        --radius-sm: calc(var(--radius) - 4px);
-        --radius-md: calc(var(--radius) - 2px);
-        --radius-lg: var(--radius);
-        --font-family-sans: var(--font-sans);
-        --font-family-heading: var(--font-heading);
-        --font-family-mono: var(--font-mono);
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Explore Wellness | Vitakart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config Verbatim -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#bbcabf",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "secondary-fixed": "#ffddb8",
+                    "outline": "#6c7a71",
+                    "on-secondary-fixed": "#2a1700",
+                    "primary-fixed": "#6ffbbe",
+                    "secondary-container": "#fea619",
+                    "tertiary": "#5f5e59",
+                    "secondary": "#855300",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dcd9d9",
+                    "primary": "#006c49",
+                    "on-background": "#1c1b1b",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#fcf8f8",
+                    "on-tertiary-fixed-variant": "#474741",
+                    "inverse-primary": "#4edea3",
+                    "surface-container": "#f0edec",
+                    "inverse-surface": "#313030",
+                    "inverse-on-surface": "#f3f0ef",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "primary-container": "#10b981",
+                    "surface-container-high": "#ebe7e7",
+                    "surface-bright": "#fcf8f8",
+                    "tertiary-fixed": "#e5e2db",
+                    "on-error-container": "#93000a",
+                    "background": "#fcf8f8",
+                    "primary-fixed-dim": "#4edea3",
+                    "on-tertiary-container": "#3a3934",
+                    "on-surface-variant": "#3c4a42",
+                    "surface-container-low": "#f6f3f2",
+                    "on-primary-fixed": "#002113",
+                    "surface-container-highest": "#e5e2e1",
+                    "tertiary-fixed-dim": "#c9c6bf",
+                    "on-primary-fixed-variant": "#005236",
+                    "on-surface": "#1c1b1b",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#684000",
+                    "tertiary-container": "#a5a39c",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e5e2e1",
+                    "on-tertiary-fixed": "#1c1c17",
+                    "on-primary-container": "#00422b",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#006c49"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1280px",
+                    "bento-gap": "20px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "display-2xl": ["Inter"],
+                    "price-display": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-2xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "price-display": ["20px", {"lineHeight": "1", "letterSpacing": "0", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
       }
-      :root { --background: #FEFBF3;
-        --foreground: #0A0A0A;
-        --primary: #10B981;
-        --primary-foreground: #FFFFFF;
-        --secondary: #F3EFE4;
-        --secondary-foreground: #0A0A0A;
-        --tertiary: #F59E0B;
-        --muted: #F5F1E8;
-        --muted-foreground: #6B665D;
-        --accent: #F59E0B;
-        --accent-foreground: #0A0A0A;
-        --card: #FFFDF8;
-        --card-foreground: #0A0A0A;
-        --destructive: #DC2626;
-        --border: #E9E1D2;
-        --input: #E9E1D2;
-        --ring: #10B981;
-        --radius: 1rem;
-        --font-sans: Inter,sans-serif;
-        --font-heading: Inter,sans-serif;
-        --font-mono: JetBrains Mono, monospace;
-        --shadow-offset-x: 0;
-        --shadow-offset-y: 10;
-        --shadow-blur: 30;
-        --shadow-spread: -8;
-        --shadow-color: rgba(15, 23, 42, 0.12); }
+    </script>
+<style>
+        body {
+            background-color: #fcf8f8; /* background from theme */
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .bento-item:hover .category-image {
+            transform: scale(1.05);
+        }
+        .bento-item {
+            overflow: hidden;
+            border-radius: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .category-image {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
     </style>
-    <style>
-      .brand-gradient { background-image: linear-gradient(135deg, var(--primary), var(--accent)); }
-      .shadow-theme {
-        box-shadow:
-          calc(var(--shadow-offset-x, 0) * 1px) calc(var(--shadow-offset-y, 10) * 1px)
-          calc(var(--shadow-blur, 30) * 1px) calc(var(--shadow-spread, -8) * 1px)
-          var(--shadow-color, rgba(15, 23, 42, 0.12));
-      }
-    </style>
-  </head>
-  <body>
-<div class="min-h-screen w-full bg-background flex flex-col relative font-sans text-foreground overflow-x-hidden">
-  <div class="bg-primary text-primary-foreground px-4 py-2 text-center text-xs font-semibold tracking-wide">
-    Get free express delivery on orders above ₹499 • Use code <span class="bg-primary-foreground/20 px-2 py-1 rounded-full">VITA20</span>
-  </div>
-
-  <header class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
-    <div class="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-          <iconify-icon icon="lucide:leaf" class="text-xl"></iconify-icon>
-        </div>
-        <div>
-          <div class="text-xl font-heading font-black tracking-tight">Vitakart</div>
-          <div class="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Premium Wellness</div>
-        </div>
-      </div>
-      <div class="hidden flex-1 items-center justify-center lg:flex">
-        <div class="flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm">
-          <iconify-icon icon="lucide:map-pin" class="text-primary text-lg"></iconify-icon>
-          <div>
-            <div class="text-xs font-bold">Deliver in 10 mins</div>
-            <div class="text-[11px] text-muted-foreground">DLF Phase 3, Gurugram</div>
-          </div>
-        </div>
-      </div>
-      <div class="flex-1">
-        <div class="relative">
-          <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-lg text-muted-foreground"></iconify-icon>
-          <input type="text" placeholder="Search vitamins, ayurveda, whey, omega 3..." class="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm shadow-sm outline-none transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20" />
-        </div>
-      </div>
-      <div class="hidden items-center gap-2 md:flex">
-        <button class="min-h-11 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">Account</button>
-        <button class="min-h-11 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-secondary-foreground shadow-md transition-all duration-300 hover:scale-105">Cart • ₹1,249</button>
-      </div>
-    </div>
-    <div class="border-t border-border px-4 py-2 text-xs text-muted-foreground lg:hidden">Delivering to DLF Phase 3, Gurugram in 10 mins</div>
-  </header>
-
-  <main class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
-    <section class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:grid-rows-2">
-      <div class="relative overflow-hidden rounded-3xl border border-border bg-card/80 p-5 shadow-md backdrop-blur-md lg:col-span-7 lg:row-span-2">
-        <div class="absolute inset-0 bg-gradient-to-br from-primary/15 via-background to-accent/10"></div>
-        <div class="absolute -right-8 top-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"></div>
-        <div class="absolute bottom-0 right-0 h-56 w-1/2 overflow-hidden rounded-l-[3rem]">
-          <img src="https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=900&q=80" alt="Premium wellness essentials" class="h-full w-full object-cover" />
-        </div>
-        <div class="relative z-10 flex max-w-md flex-col gap-4">
-          <div class="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-md">
-            <iconify-icon icon="lucide:zap" class="text-primary"></iconify-icon>
-            Next-gen wellness delivery
-          </div>
-          <h1 class="text-4xl font-heading font-black leading-tight sm:text-5xl">Feed your family the best wellness, faster than ever.</h1>
-          <p class="max-w-sm text-sm leading-6 text-muted-foreground">Discover premium vitamins, ayurveda, sports nutrition, and clean supplements curated for modern Indian households.</p>
-          <div class="flex flex-wrap gap-3">
-            <button class="min-h-11 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg">Shop Bestsellers</button>
-            <button class="min-h-11 rounded-2xl border border-border bg-background/70 px-5 py-3 text-sm font-semibold backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">Explore Categories</button>
-          </div>
-          <div class="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
-            <div class="flex items-center gap-1"><iconify-icon icon="lucide:circle-check" class="text-primary"></iconify-icon> Authentic brands</div>
-            <div class="flex items-center gap-1"><iconify-icon icon="lucide:truck" class="text-primary"></iconify-icon> 10 min delivery</div>
-          </div>
-        </div>
-        <div class="relative z-10 mt-6 flex items-center gap-2">
-          <span class="h-2.5 w-8 rounded-full bg-primary"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-border"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-border"></span>
-        </div>
-      </div>
-
-      <div class="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-5 shadow-md backdrop-blur-md lg:col-span-5">
-        <div class="absolute inset-0 bg-gradient-to-br from-accent/20 to-background"></div>
-        <div class="relative z-10 flex h-full flex-col justify-between gap-4">
-          <div>
-            <div class="inline-flex rounded-full bg-background/70 px-3 py-1 text-[11px] font-semibold text-muted-foreground">Happy Hour</div>
-            <h2 class="mt-3 text-2xl font-heading font-bold">Flash deals for your evening reset.</h2>
-            <p class="mt-2 text-sm text-muted-foreground">Wellness shots, protein bars, and recovery kits with instant savings.</p>
-          </div>
-          <div class="flex items-center justify-between">
-            <button class="min-h-11 rounded-full bg-accent px-4 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Shop Now</button>
-            <img src="https://images.unsplash.com/photo-1579722821273-0f6c6f6a4b09?auto=format&fit=crop&w=500&q=80" alt="Wellness bottles" class="h-24 w-24 rounded-2xl object-cover shadow-md" />
-          </div>
-        </div>
-      </div>
-
-      <div class="relative overflow-hidden rounded-3xl border border-border bg-charcoal p-5 shadow-md lg:col-span-5">
-        <div class="absolute inset-0 bg-gradient-to-br from-foreground via-foreground to-primary/40"></div>
-        <div class="relative z-10 flex h-full flex-col justify-between gap-4 text-primary-foreground">
-          <div>
-            <div class="inline-flex rounded-full bg-primary-foreground/10 px-3 py-1 text-[11px] font-semibold">Weekly Discount</div>
-            <h2 class="mt-3 text-2xl font-heading font-bold">Save up to 35% on premium essentials.</h2>
-            <p class="mt-2 text-sm text-primary-foreground/80">Stack offers on multivitamins, omega 3, and ayurvedic immunity boosters.</p>
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="rounded-2xl bg-primary-foreground/10 px-3 py-2 text-xs font-semibold backdrop-blur-md">Code: VITAWEEK</div>
-            <button class="min-h-11 rounded-full bg-primary px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Unlock Offer</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <div class="flex items-end justify-between">
-        <div>
-          <h2 class="text-2xl font-heading font-bold">Shop by category</h2>
-          <p class="text-sm text-muted-foreground">Snap-scroll on mobile, expansive overview on desktop.</p>
-        </div>
-      </div>
-      <div class="grid grid-flow-col auto-cols-[96px] gap-4 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid-flow-row lg:auto-cols-auto lg:grid-cols-8 lg:overflow-visible">
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/20 text-primary"><iconify-icon icon="lucide:pill" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Vitamins</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent/20 to-primary/10 text-accent"><iconify-icon icon="lucide:dumbbell" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Sports</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-background text-primary"><iconify-icon icon="lucide:leaf" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Ayurveda</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent/20 to-background text-accent"><iconify-icon icon="lucide:heart" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Wellness</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/10 text-primary"><iconify-icon icon="lucide:shield" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Immunity</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent/20 to-primary/10 text-accent"><iconify-icon icon="lucide:sparkles" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Beauty</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/10 text-primary"><iconify-icon icon="lucide:brain" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Mind Care</div></div>
-        <div class="snap-start rounded-3xl border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-md"><div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent/20 to-background text-accent"><iconify-icon icon="lucide:sun" class="text-2xl"></iconify-icon></div><div class="mt-3 text-xs font-semibold">Bone Care</div></div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <div class="relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"><div class="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-primary-foreground/10"></div><div class="relative z-10"><div class="text-xs font-semibold uppercase tracking-wider">Vitamins</div><h3 class="mt-2 text-xl font-heading font-bold">Daily health, simplified.</h3><p class="mt-2 text-sm text-primary-foreground/80">C, D3, multivitamins and targeted blends.</p><button class="mt-4 min-h-11 rounded-full bg-primary-foreground/15 px-4 py-3 text-xs font-bold backdrop-blur-md transition-all duration-300 hover:bg-primary-foreground/25">Shop Stack</button></div></div>
-      <div class="relative overflow-hidden rounded-3xl bg-accent p-5 text-secondary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"><div class="absolute bottom-0 right-0 h-20 w-20 rounded-tl-[2rem] bg-background/30"></div><div class="relative z-10"><div class="text-xs font-semibold uppercase tracking-wider">Herbal</div><h3 class="mt-2 text-xl font-heading font-bold">Clean nature-forward care.</h3><p class="mt-2 text-sm text-secondary-foreground/80">Ashwagandha, turmeric and holistic wellness.</p><button class="mt-4 min-h-11 rounded-full bg-background/40 px-4 py-3 text-xs font-bold backdrop-blur-md transition-all duration-300 hover:bg-background/60">View Herbs</button></div></div>
-      <div class="relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"><div class="absolute right-3 top-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10"><iconify-icon icon="lucide:capsules" class="text-2xl text-primary"></iconify-icon></div><div class="max-w-[75%]"><div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Supplements</div><h3 class="mt-2 text-xl font-heading font-bold">Smart nutrition for busy lives.</h3><p class="mt-2 text-sm text-muted-foreground">Omega 3, probiotics and clean daily support.</p><button class="mt-4 min-h-11 rounded-full border border-border px-4 py-3 text-xs font-bold transition-all duration-300 hover:bg-muted">Browse</button></div></div>
-      <div class="relative overflow-hidden rounded-3xl border border-border bg-foreground p-5 text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"><div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-primary/20 blur-2xl"></div><div class="relative z-10"><div class="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">Sports Nutrition</div><h3 class="mt-2 text-xl font-heading font-bold">Performance with premium precision.</h3><p class="mt-2 text-sm text-primary-foreground/75">Whey, creatine and endurance essentials.</p><button class="mt-4 min-h-11 rounded-full bg-primary px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Fuel Up</button></div></div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-destructive/20 via-background to-destructive/10 p-5 shadow-md">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Flash Sale</div>
-            <h3 class="mt-2 text-2xl font-heading font-bold">Beauty & wellness reset</h3>
-            <p class="mt-2 text-sm text-muted-foreground">Premium care bundles ending tonight.</p>
-          </div>
-          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=500&q=80" alt="Beauty essentials" class="h-24 w-24 rounded-2xl object-cover shadow-md" />
-        </div>
-        <div class="mt-5 grid grid-cols-4 gap-2">
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">02</div><div class="text-[10px] text-muted-foreground">Days</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">14</div><div class="text-[10px] text-muted-foreground">Hours</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">48</div><div class="text-[10px] text-muted-foreground">Min</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">22</div><div class="text-[10px] text-muted-foreground">Sec</div></div>
-        </div>
-        <button class="mt-5 min-h-11 rounded-full bg-destructive px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Shop Now</button>
-      </div>
-      <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-accent/25 via-background to-primary/10 p-5 shadow-md">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Happy Hour</div>
-            <h3 class="mt-2 text-2xl font-heading font-bold">Protein picks at startup speed</h3>
-            <p class="mt-2 text-sm text-muted-foreground">Fast-moving sports nutrition deals for your routine.</p>
-          </div>
-          <img src="https://images.unsplash.com/photo-1594737625785-cf1941db2a82?auto=format&fit=crop&w=500&q=80" alt="Protein jar" class="h-24 w-24 rounded-2xl object-cover shadow-md" />
-        </div>
-        <div class="mt-5 grid grid-cols-4 gap-2">
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">01</div><div class="text-[10px] text-muted-foreground">Days</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">08</div><div class="text-[10px] text-muted-foreground">Hours</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">16</div><div class="text-[10px] text-muted-foreground">Min</div></div>
-          <div class="rounded-2xl bg-card px-3 py-3 text-center"><div class="text-lg font-black">09</div><div class="text-[10px] text-muted-foreground">Sec</div></div>
-        </div>
-        <button class="mt-5 min-h-11 rounded-full bg-accent px-4 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Shop Now</button>
-      </div>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <div class="flex items-end justify-between">
-        <div>
-          <h2 class="text-2xl font-heading font-bold">Best sellers</h2>
-          <p class="text-sm text-muted-foreground">Small compact cards designed for speed and scanability.</p>
-        </div>
-        <button class="hidden text-sm font-semibold text-primary md:block">View all</button>
-      </div>
-      <div class="flex gap-4 overflow-x-auto pb-2">
-        <div class="w-[180px] flex-shrink-0 rounded-3xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"><div class="relative rounded-2xl bg-muted p-3"><span class="absolute left-2 top-2 rounded-full bg-destructive px-2 py-1 text-[10px] font-bold text-primary-foreground">25% OFF</span><img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80" alt="Vitamin C" class="mx-auto h-28 w-28 rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Carbamide Forte</div><h3 class="mt-1 text-sm font-bold leading-5">Vitamin C + Zinc Immunity Tablets</h3><div class="mt-2 flex items-center gap-1 text-yellow-500"><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><span class="text-[11px] font-semibold text-muted-foreground">4.8</span></div><div class="mt-3 flex items-end justify-between"><div><div class="text-lg font-black text-destructive">₹649</div><div class="text-[11px] text-muted-foreground line-through">₹899</div></div><button class="min-h-11 rounded-2xl bg-accent px-3 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Add</button></div></div>
-        <div class="w-[180px] flex-shrink-0 rounded-3xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"><div class="relative rounded-2xl bg-muted p-3"><span class="absolute left-2 top-2 rounded-full bg-destructive px-2 py-1 text-[10px] font-bold text-primary-foreground">18% OFF</span><img src="https://images.unsplash.com/photo-1611078489935-0cb964de46d6?auto=format&fit=crop&w=400&q=80" alt="Whey protein" class="mx-auto h-28 w-28 rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">MuscleBlaze</div><h3 class="mt-1 text-sm font-bold leading-5">Biozyme Whey Protein 1 kg</h3><div class="mt-2 flex items-center gap-1 text-yellow-500"><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><span class="text-[11px] font-semibold text-muted-foreground">4.9</span></div><div class="mt-3 flex items-end justify-between"><div><div class="text-lg font-black text-destructive">₹2,399</div><div class="text-[11px] text-muted-foreground line-through">₹2,950</div></div><button class="min-h-11 rounded-2xl bg-accent px-3 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Add</button></div></div>
-        <div class="w-[180px] flex-shrink-0 rounded-3xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"><div class="relative rounded-2xl bg-muted p-3"><span class="absolute left-2 top-2 rounded-full bg-destructive px-2 py-1 text-[10px] font-bold text-primary-foreground">15% OFF</span><img src="https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=400&q=80" alt="Ashwagandha" class="mx-auto h-28 w-28 rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Himalaya</div><h3 class="mt-1 text-sm font-bold leading-5">Ashwagandha Stress Support</h3><div class="mt-2 flex items-center gap-1 text-yellow-500"><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><span class="text-[11px] font-semibold text-muted-foreground">4.6</span></div><div class="mt-3 flex items-end justify-between"><div><div class="text-lg font-black text-destructive">₹299</div><div class="text-[11px] text-muted-foreground line-through">₹349</div></div><button class="min-h-11 rounded-2xl bg-accent px-3 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Add</button></div></div>
-        <div class="w-[180px] flex-shrink-0 rounded-3xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"><div class="relative rounded-2xl bg-muted p-3"><span class="absolute left-2 top-2 rounded-full bg-destructive px-2 py-1 text-[10px] font-bold text-primary-foreground">32% OFF</span><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" alt="Omega 3" class="mx-auto h-28 w-28 rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Swisse</div><h3 class="mt-1 text-sm font-bold leading-5">Omega 3 Wild Fish Oil</h3><div class="mt-2 flex items-center gap-1 text-yellow-500"><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><span class="text-[11px] font-semibold text-muted-foreground">4.7</span></div><div class="mt-3 flex items-end justify-between"><div><div class="text-lg font-black text-destructive">₹899</div><div class="text-[11px] text-muted-foreground line-through">₹1,299</div></div><button class="min-h-11 rounded-2xl bg-accent px-3 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Add</button></div></div>
-        <div class="w-[180px] flex-shrink-0 rounded-3xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"><div class="relative rounded-2xl bg-muted p-3"><span class="absolute left-2 top-2 rounded-full bg-destructive px-2 py-1 text-[10px] font-bold text-primary-foreground">22% OFF</span><img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80" alt="Turmeric supplement" class="mx-auto h-28 w-28 rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Organic India</div><h3 class="mt-1 text-sm font-bold leading-5">Turmeric Formula Capsules</h3><div class="mt-2 flex items-center gap-1 text-yellow-500"><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><iconify-icon icon="lucide:star" class="text-xs"></iconify-icon><span class="text-[11px] font-semibold text-muted-foreground">4.5</span></div><div class="mt-3 flex items-end justify-between"><div><div class="text-lg font-black text-destructive">₹459</div><div class="text-[11px] text-muted-foreground line-through">₹589</div></div><button class="min-h-11 rounded-2xl bg-accent px-3 py-3 text-xs font-bold text-secondary-foreground transition-all duration-300 hover:scale-105">Add</button></div></div>
-      </div>
-    </section>
-
-    <section class="rounded-3xl bg-primary px-5 py-4 text-primary-foreground shadow-md">
-      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center gap-3"><div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-foreground/15"><iconify-icon icon="lucide:truck" class="text-xl"></iconify-icon></div><div><div class="text-lg font-heading font-bold">100% Secure delivery</div><div class="text-sm text-primary-foreground/80">Cold-chain aware packaging, tamper-safe boxes, and live support.</div></div></div>
-        <button class="min-h-11 rounded-full bg-primary-foreground px-5 py-3 text-sm font-bold text-primary transition-all duration-300 hover:scale-105">Shop Now</button>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside class="rounded-3xl border border-border bg-card p-5 shadow-sm">
-        <div class="rounded-3xl bg-gradient-to-br from-primary/15 to-accent/15 p-4">
-          <div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Weekly discount</div>
-          <h3 class="mt-2 text-xl font-heading font-bold">Vitamins & Supplements</h3>
-          <p class="mt-2 text-sm text-muted-foreground">Flat 20% off on curated nutrition picks.</p>
-          <button class="mt-4 min-h-11 rounded-full bg-primary px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Unlock Savings</button>
-        </div>
-        <div class="mt-5 space-y-2">
-          <div class="rounded-2xl bg-muted px-4 py-3 text-sm font-semibold">Daily Multivitamins</div>
-          <div class="rounded-2xl px-4 py-3 text-sm text-muted-foreground transition-all duration-300 hover:bg-muted">Vitamin D3 & K2</div>
-          <div class="rounded-2xl px-4 py-3 text-sm text-muted-foreground transition-all duration-300 hover:bg-muted">Omega 3 & Probiotics</div>
-          <div class="rounded-2xl px-4 py-3 text-sm text-muted-foreground transition-all duration-300 hover:bg-muted">Whey & Creatine</div>
-        </div>
-      </aside>
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&w=400&q=80" alt="Multivitamin" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">HealthKart</div><div class="mt-1 text-sm font-bold">Multivitamin Daily Gold</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.7</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹799</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=80" alt="Vitamin d3" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">TrueBasics</div><div class="mt-1 text-sm font-bold">Vitamin D3 5000 IU</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.8</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹549</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=400&q=80" alt="Omega 3" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">HKVitals</div><div class="mt-1 text-sm font-bold">Omega 3 Triple Strength</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.6</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹899</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm animate-pulse"><div class="h-32 rounded-2xl bg-muted"></div><div class="mt-3 h-3 w-20 rounded bg-muted"></div><div class="mt-2 h-4 w-32 rounded bg-muted"></div><div class="mt-3 h-4 w-16 rounded bg-muted"></div><div class="mt-4 flex items-center justify-between"><div class="h-5 w-14 rounded bg-muted"></div><div class="h-10 w-14 rounded-2xl bg-muted"></div></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80" alt="Protein" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">MuscleBlaze</div><div class="mt-1 text-sm font-bold">Beginner Whey Protein</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.8</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹1,899</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1556228578-dd6f4d2d1a93?auto=format&fit=crop&w=400&q=80" alt="Creatine" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">BigMuscles</div><div class="mt-1 text-sm font-bold">Creatine Monohydrate</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.5</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹699</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" alt="Probiotic" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Boldfit</div><div class="mt-1 text-sm font-bold">Probiotic Daily Support</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.4</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹599</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm animate-pulse"><div class="h-32 rounded-2xl bg-muted"></div><div class="mt-3 h-3 w-20 rounded bg-muted"></div><div class="mt-2 h-4 w-32 rounded bg-muted"></div><div class="mt-3 h-4 w-16 rounded bg-muted"></div><div class="mt-4 flex items-center justify-between"><div class="h-5 w-14 rounded bg-muted"></div><div class="h-10 w-14 rounded-2xl bg-muted"></div></div></div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside class="rounded-3xl border border-border bg-foreground p-5 text-primary-foreground shadow-sm">
-        <div class="rounded-3xl bg-primary-foreground/10 p-4 backdrop-blur-md">
-          <div class="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">Curated ayurveda</div>
-          <h3 class="mt-2 text-xl font-heading font-bold">Herbal & Ayurveda</h3>
-          <p class="mt-2 text-sm text-primary-foreground/75">Foundational wellness rituals for stress, immunity and glow.</p>
-          <button class="mt-4 min-h-11 rounded-full bg-primary px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Shop Rituals</button>
-        </div>
-        <div class="mt-5 space-y-2 text-sm">
-          <div class="rounded-2xl bg-primary-foreground/10 px-4 py-3">Ashwagandha</div>
-          <div class="rounded-2xl px-4 py-3 text-primary-foreground/70 transition-all duration-300 hover:bg-primary-foreground/10">Turmeric blends</div>
-          <div class="rounded-2xl px-4 py-3 text-primary-foreground/70 transition-all duration-300 hover:bg-primary-foreground/10">Beauty oils</div>
-          <div class="rounded-2xl px-4 py-3 text-primary-foreground/70 transition-all duration-300 hover:bg-primary-foreground/10">Detox teas</div>
-        </div>
-      </aside>
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" alt="Ashwagandha" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Himalaya</div><div class="mt-1 text-sm font-bold">Ashwagandha Calm Support</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.6</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹349</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=400&q=80" alt="Turmeric" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Organic India</div><div class="mt-1 text-sm font-bold">Turmeric Formula Gold</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.7</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹429</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80" alt="Beauty oil" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Kama Ayurveda</div><div class="mt-1 text-sm font-bold">Kumkumadi Face Oil</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.9</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹1,895</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm animate-pulse"><div class="h-32 rounded-2xl bg-muted"></div><div class="mt-3 h-3 w-20 rounded bg-muted"></div><div class="mt-2 h-4 w-32 rounded bg-muted"></div><div class="mt-3 h-4 w-16 rounded bg-muted"></div><div class="mt-4 flex items-center justify-between"><div class="h-5 w-14 rounded bg-muted"></div><div class="h-10 w-14 rounded-2xl bg-muted"></div></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=400&q=80" alt="Detox tea" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Kapiva</div><div class="mt-1 text-sm font-bold">Detox Herbal Tea Blend</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.5</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹289</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80" alt="Gummies" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Plix</div><div class="mt-1 text-sm font-bold">Apple Cider Vinegar Gummies</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.6</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹599</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm"><div class="rounded-2xl bg-muted p-3"><img src="https://images.unsplash.com/photo-1467453678174-768ec283a940?auto=format&fit=crop&w=400&q=80" alt="Beauty tonic" class="h-24 w-full rounded-2xl object-cover" /></div><div class="mt-3 text-[11px] font-semibold uppercase text-muted-foreground">Forest Essentials</div><div class="mt-1 text-sm font-bold">Beauty & Wellness Tonic</div><div class="mt-2 text-yellow-500 text-xs">★★★★★ <span class="text-muted-foreground">4.8</span></div><div class="mt-3 flex items-center justify-between"><span class="text-base font-black text-destructive">₹1,299</span><button class="min-h-11 rounded-2xl border border-border px-3 py-3 text-xs font-bold">Add</button></div></div>
-        <div class="rounded-3xl border border-border bg-card p-3 shadow-sm animate-pulse"><div class="h-32 rounded-2xl bg-muted"></div><div class="mt-3 h-3 w-20 rounded bg-muted"></div><div class="mt-2 h-4 w-32 rounded bg-muted"></div><div class="mt-3 h-4 w-16 rounded bg-muted"></div><div class="mt-4 flex items-center justify-between"><div class="h-5 w-14 rounded bg-muted"></div><div class="h-10 w-14 rounded-2xl bg-muted"></div></div></div>
-      </div>
-    </section>
-
-    <section class="rounded-3xl border border-destructive/20 bg-destructive/10 px-5 py-4 shadow-sm">
-      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-destructive">First purchase offer</div>
-          <div class="mt-1 text-lg font-heading font-bold">Use code VITA256AC for an instant welcome discount</div>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="rounded-2xl bg-card px-4 py-3 text-sm font-black tracking-[0.2em] text-destructive">VITA256AC</div>
-          <button class="min-h-11 rounded-2xl bg-destructive px-4 py-3 text-xs font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Copy</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div class="rounded-3xl bg-gradient-to-br from-purple-500/20 to-background p-5 shadow-md"><div class="flex items-center justify-between gap-3"><div><div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Natural Products</div><h3 class="mt-2 text-2xl font-heading font-bold">Rooted in plant-powered care.</h3></div><div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-background bg-card shadow-md"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=80" alt="Natural products" class="h-16 w-16 rounded-full object-cover" /></div></div></div>
-      <div class="rounded-3xl bg-gradient-to-br from-primary/20 to-background p-5 shadow-md"><div class="flex items-center justify-between gap-3"><div><div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taste the Best</div><h3 class="mt-2 text-2xl font-heading font-bold">Functional wellness that fits daily life.</h3></div><div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-background bg-card shadow-md"><img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=200&q=80" alt="Taste the best" class="h-16 w-16 rounded-full object-cover" /></div></div></div>
-      <div class="rounded-3xl bg-gradient-to-br from-accent/20 to-background p-5 shadow-md"><div class="flex items-center justify-between gap-3"><div><div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ditch the Junk</div><h3 class="mt-2 text-2xl font-heading font-bold">Upgrade to cleaner ingredients and smarter picks.</h3></div><div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-background bg-card shadow-md"><img src="https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=200&q=80" alt="Ditch the junk" class="h-16 w-16 rounded-full object-cover" /></div></div></div>
-    </section>
-
-    <section class="overflow-hidden rounded-3xl bg-foreground p-6 text-primary-foreground shadow-md">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-center">
-        <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-primary-foreground/60">Brand story</div>
-          <h2 class="mt-2 text-3xl font-heading font-black">Wellness content that feels cinematic, human, and premium.</h2>
-          <p class="mt-3 max-w-lg text-sm leading-6 text-primary-foreground/75">Vitakart is building a next-gen platform for mindful routines—combining trusted brands, thoughtful content, and startup-grade execution for India’s health-conscious shoppers.</p>
-          <button class="mt-5 min-h-11 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Watch Story</button>
-        </div>
-        <div class="relative overflow-hidden rounded-3xl border border-primary-foreground/10 bg-primary-foreground/5 p-3 backdrop-blur-md">
-          <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=80" alt="Wellness lifestyle" class="h-72 w-full rounded-3xl object-cover" />
-          <div class="absolute inset-0 flex items-center justify-center"><button class="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-110"><iconify-icon icon="lucide:play" class="text-2xl"></iconify-icon></button></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <div>
-        <h2 class="text-2xl font-heading font-bold">Partner brands</h2>
-        <p class="text-sm text-muted-foreground">Trusted names across vitamins, ayurveda and beauty wellness.</p>
-      </div>
-      <div class="flex gap-4 overflow-x-auto pb-2">
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">MuscleBlaze</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Himalaya</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Swisse</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Organic India</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Kapiva</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Kama Ayurveda</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Plix</div>
-        <div class="flex min-w-[150px] items-center justify-center rounded-3xl border border-border bg-card px-6 py-5 text-sm font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:shadow-md">Boldfit</div>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div class="rounded-3xl border border-border bg-card p-5 shadow-sm"><div class="flex items-center gap-3"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer avatar" class="h-12 w-12 rounded-full object-cover" /><div><div class="font-bold">Aarushi Mehta</div><div class="text-xs text-muted-foreground">Bengaluru</div></div></div><div class="mt-3 text-yellow-500">★★★★★</div><p class="mt-3 text-sm leading-6 text-muted-foreground">Beautifully curated platform. The packaging, discovery flow and quick delivery make this feel premium end-to-end.</p></div>
-      <div class="rounded-3xl border border-border bg-card p-5 shadow-sm"><div class="flex items-center gap-3"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer avatar" class="h-12 w-12 rounded-full object-cover" /><div><div class="font-bold">Rohan Khanna</div><div class="text-xs text-muted-foreground">Mumbai</div></div></div><div class="mt-3 text-yellow-500">★★★★★</div><p class="mt-3 text-sm leading-6 text-muted-foreground">Compact cards, premium look, and genuinely useful product mix. It feels more like a wellness brand than a marketplace.</p></div>
-      <div class="rounded-3xl border border-border bg-card p-5 shadow-sm"><div class="flex items-center gap-3"><img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Customer avatar" class="h-12 w-12 rounded-full object-cover" /><div><div class="font-bold">Ishita Rao</div><div class="text-xs text-muted-foreground">Hyderabad</div></div></div><div class="mt-3 text-yellow-500">★★★★★</div><p class="mt-3 text-sm leading-6 text-muted-foreground">Love the ayurveda selection and the startup-quality polish. Everything feels intentional and easy to browse on mobile.</p></div>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <div>
-        <h2 class="text-2xl font-heading font-bold">Instagram moments</h2>
-        <p class="text-sm text-muted-foreground">Lifestyle-led wellness storytelling.</p>
-      </div>
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 1" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 2" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 3" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 4" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 5" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-        <div class="group relative overflow-hidden rounded-3xl"><img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80" alt="Lifestyle wellness 6" class="h-44 w-full object-cover transition-all duration-500 group-hover:scale-110" /><div class="absolute inset-0 bg-foreground/0 transition-all duration-300 group-hover:bg-foreground/20"></div></div>
-      </div>
-    </section>
-
-    <section class="relative overflow-hidden rounded-3xl bg-foreground px-6 py-8 text-primary-foreground shadow-md">
-      <div class="absolute -left-8 top-0 h-32 w-32 rounded-full bg-primary/20 blur-3xl"></div>
-      <div class="absolute right-0 top-8 h-24 w-24 rounded-full bg-accent/20 blur-2xl"></div>
-      <div class="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div class="max-w-xl">
-          <div class="text-xs font-semibold uppercase tracking-wider text-primary-foreground/60">Newsletter</div>
-          <h2 class="mt-2 text-3xl font-heading font-black">Get wellness drops, launch alerts, and curated routines in your inbox.</h2>
-          <p class="mt-3 text-sm leading-6 text-primary-foreground/75">Join the Vitakart circle for exclusive offers, new brand launches, and expert-backed recommendations.</p>
-        </div>
-        <div class="flex w-full max-w-md flex-col gap-3 sm:flex-row">
-          <input type="email" placeholder="Enter your email" class="min-h-11 flex-1 rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 px-4 py-3 text-sm text-primary-foreground outline-none placeholder:text-primary-foreground/50" />
-          <button class="min-h-11 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-all duration-300 hover:scale-105">Subscribe</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="border-t border-border bg-card/80 px-4 py-8 sm:px-6 lg:px-8">
-    <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      <div class="grid grid-cols-3 gap-3 md:grid-cols-6">
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"><iconify-icon icon="lucide:pill" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Vitamins</div><div class="text-xs text-muted-foreground">124 items</div></div>
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent"><iconify-icon icon="lucide:dumbbell" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Sports</div><div class="text-xs text-muted-foreground">86 items</div></div>
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"><iconify-icon icon="lucide:leaf" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Ayurveda</div><div class="text-xs text-muted-foreground">64 items</div></div>
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent"><iconify-icon icon="lucide:heart" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Beauty</div><div class="text-xs text-muted-foreground">42 items</div></div>
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"><iconify-icon icon="lucide:shield" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Immunity</div><div class="text-xs text-muted-foreground">55 items</div></div>
-        <div class="rounded-3xl border border-border bg-background p-4 text-center shadow-sm"><div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent"><iconify-icon icon="lucide:sparkles" class="text-xl"></iconify-icon></div><div class="mt-3 text-sm font-bold">Wellness</div><div class="text-xs text-muted-foreground">73 items</div></div>
-      </div>
-      <div class="flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-        <div>© 2026 Vitakart • Premium multi-tenant wellness commerce for India</div>
-        <div class="flex items-center gap-4"><span>Inter + Tailwind UI ready</span><span>₹ INR storefront</span><span>Next.js 16</span></div>
-      </div>
-    </div>
-  </footer>
-
-  <div class="relative lg:hidden">
-    <nav class="absolute bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-background/95 px-4 py-2 backdrop-blur-md">
-      <button class="flex min-h-11 flex-col items-center justify-center gap-1 text-primary"><iconify-icon icon="lucide:house" class="text-xl"></iconify-icon><span class="text-[10px] font-bold">Home</span></button>
-      <button class="flex min-h-11 flex-col items-center justify-center gap-1 text-muted-foreground"><iconify-icon icon="lucide:grid-3x3" class="text-xl"></iconify-icon><span class="text-[10px] font-semibold">Browse</span></button>
-      <button class="flex min-h-11 flex-col items-center justify-center gap-1 text-muted-foreground"><iconify-icon icon="lucide:shopping-cart" class="text-xl"></iconify-icon><span class="text-[10px] font-semibold">Cart</span></button>
-      <button class="flex min-h-11 flex-col items-center justify-center gap-1 text-muted-foreground"><iconify-icon icon="lucide:user" class="text-xl"></iconify-icon><span class="text-[10px] font-semibold">Account</span></button>
-    </nav>
-  </div>
+</head>
+<body class="text-on-surface">
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-white/30 dark:border-outline-variant/20 shadow-sm docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Vitakart</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Explore</a>
+<a class="text-on-surface-variant font-medium font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Shop</a>
+<a class="text-on-surface-variant font-medium font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Our Science</a>
+<a class="text-on-surface-variant font-medium font-body-md text-body-md hover:text-primary transition-colors duration-200" href="#">Wellness Lab</a>
 </div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center bg-surface-container rounded-full px-4 py-2 border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md placeholder:text-on-surface-variant/50 w-48" placeholder="Search supplements..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="scale-105 transition-transform duration-300 text-primary">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<button class="scale-105 transition-transform duration-300 text-primary">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12">
+<!-- Hero Title Section -->
+<header class="mb-12">
+<span class="font-label-caps text-label-caps text-primary mb-4 block">PREMIUM SELECTION</span>
+<h1 class="font-headline-lg text-headline-lg md:text-display-2xl tracking-tight text-on-surface">Explore Wellness</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-4 max-w-2xl">Discover clinical excellence blended with holistic wisdom. Our curated categories are designed to fuel your vitality at every life stage.</p>
+</header>
+<!-- Asymmetric Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-bento-gap">
+<!-- 1. Vitamins & Daily Essentials (Large Card) -->
+<div class="md:col-span-8 md:row-span-2 bento-item group cursor-pointer h-[500px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="A high-end, bright minimalist kitchen setting where a vibrant person is holding a designer glass of water and taking a green vitamin capsule. The lighting is soft morning sunlight, casting gentle shadows. The color palette features warm creams, soft whites, and touches of emerald green, embodying clinical excellence and a premium wellness lifestyle." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0ZvEs1sVqKmtLT0NVtgHBaoUXCwEcNCU1Ze_5o_19LAIRnkTIcWmjHg0NWkQro1FO5OtEpjprDaMRNVZhdFcr6d9tnsXp8P6TTO77oNWRyIQVk0rZKU74_He1FMCt3Nzb5HChOxJ3roKymClrlrxkiHuR3zSpyMScNQHnAcjy24TqIvm6svmM3i4DeXMBwLVVmRdzUm7VD6Z_CiFRVTPXJhhXu2XvMHEngHvU7xmu0lakjOzCBomUKLsbnvf_A8x6OArF6hD0JOA')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/60 to-transparent z-10"></div>
+<div class="absolute bottom-0 left-0 p-8 z-20 w-full flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-primary-fixed mb-2 block">ESSENTIALS</span>
+<h2 class="font-headline-lg text-headline-lg text-white">Vitamins &amp; Daily Essentials</h2>
+<p class="font-body-md text-body-md text-white/80 mt-2 max-w-md">Scientifically backed formulations for foundational health and immunity.</p>
+</div>
+<div class="glass-card rounded-full p-4 group-hover:bg-white transition-colors duration-300">
+<span class="material-symbols-outlined text-white group-hover:text-primary">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- 2. Modern Ayurveda (Medium Card) -->
+<div class="md:col-span-4 bento-item group cursor-pointer h-[240px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="A sophisticated still life photography of traditional Ayurvedic herbs like Ashwagandha and Turmeric arranged next to sleek, modern glass lab beakers and professional pipettes. The lighting is warm and cinematic, suggesting a blend of ancient wisdom and modern scientific research. The background is a textured light beige, maintaining a luxury boutique aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCvAk49zaxso9OJgXwi2Jx5o7ft1flPsQlUSZEluFUzpeg4h1Zh-MmSwNEozsOzLP_3VN7uXyK7D9DzEtRDTtR2sOW_Wqm3Ue-3AoJHkCQTINRgj3MIq2TSz-AWecurtkfdEs_DkPdVV39-BBKANwX_PZY-qsnofbrmj_nNuAZfvBzIkSoaQJ53k7pzFX0ip6u7AM1xMxipG6Ba9jDc0RbKIMfW63iRZiqUn2moxj7dpUYLyFjZyxjTpNb4yP_s6KbT8dKAfhUd3Wg')">
+</div>
+<div class="absolute inset-0 bg-black/30 z-10"></div>
+<div class="absolute inset-0 flex flex-col justify-end p-6 z-20">
+<h3 class="font-headline-md text-headline-md text-white">Modern Ayurveda</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-caps text-[10px] text-white/70">TRADITION MEETS SCIENCE</span>
+</div>
+</div>
+</div>
+<!-- 3. Sports Nutrition (Medium Card) -->
+<div class="md:col-span-4 bento-item group cursor-pointer h-[240px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="A sleek, dark-themed gym environment with matte black equipment and soft, focused spotlighting on premium black supplement canisters. A subtle hint of motion blur suggests energy and performance. The visual style is high-performance luxury, utilizing deep charcoal tones and sharp highlights to emphasize strength and precision in sports nutrition." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAbYfejnmABtzam8Zvtgbe5X8CI2gWyZXC__BKBlVfnhJJ7e1f5iZNGLypsOCzNyluJKMgEIquvUn75bQ9ax0dxaG44jgcmIha4oaqMe-uSZefypGVm1Dze4tXLmfudRd5KSr8GbYfXPTFS9_Y9g_mAuJeeM0jwJixo0xCfuWp04DHl9yRgivvQ6f7UI41CLDlKkifzCPHJezHRIZJeFYmNPr_KOoo8Bnq7dYeMiZ-foQV9htHMIUyzFAMgGJt-buv0KMdrCDdSRn8')">
+</div>
+<div class="absolute inset-0 bg-black/40 z-10"></div>
+<div class="absolute inset-0 flex flex-col justify-end p-6 z-20">
+<h3 class="font-headline-md text-headline-md text-white">Sports Nutrition</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-caps text-[10px] text-white/70">PERFORMANCE &amp; RECOVERY</span>
+</div>
+</div>
+</div>
+<!-- 4. Beauty & Wellness (Small Card) -->
+<div class="md:col-span-4 bento-item group cursor-pointer h-[240px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="Macro photography of smooth, hydrated skin with soft-focus floral elements in the background. A single, pearlescent drop of serum is visible, reflecting clean, high-key lighting. The color palette is composed of soft pinks, nudes, and milky whites, creating a serene and luxurious beauty-from-within mood. Minimalist and airy composition." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-FUGEd6MR6XtGblXxmtGbJ5wYTHi6VsAzHbOPqdP0ecQzhlUH80aPurN8CFfye3JpAlHeXVl5rqWa2YWPya99Dcou2OGDR63MEtmJ3VZ0kAQz-uzQm8iM_vCsdJFWaiVw4HdQqv8j2vNMy7vPLOpOdv34okNDeI24zFR4uq4ruGv8rpWeTRu75AARfmSkmhJoX5oB1I6arQrvB47qzvoY9hPLgJ1W2fpI78pS0J4ft1jPL_PiXB3cnEgYc8Q5CarF9mwCpQtTnsM')">
+</div>
+<div class="absolute inset-0 bg-white/10 z-10 backdrop-blur-[2px]"></div>
+<div class="absolute inset-0 flex flex-col justify-end p-6 z-20">
+<div class="glass-card p-3 rounded-xl">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Beauty &amp; Wellness</h3>
+</div>
+</div>
+</div>
+<!-- 5. Kids Health (Small Card) -->
+<div class="md:col-span-4 bento-item group cursor-pointer h-[240px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="A playful yet premium lifestyle shot of bright-colored gummy vitamins in a clean glass jar. The background is a soft, pastel-colored nursery or playroom with high-quality wooden toys. The lighting is cheerful and bright, emphasizing safety, purity, and health for children in a modern Indian home setting. Vibrant but balanced color tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAi612hTbf0DbW0cjIS-WLwlOA0veOk8nhPDrT-PvNdjsoFhD23pevgtncADVwJKmjVrL3O6t6dSl37c6JikmSGrenbxoF3JHAf1QtCFGg6ewgZI63HKVGiZUchKBfrIUNoWtyN2XOGYq9WCPwBvnA9NJWoLbpd3IL1-ZeKvb0Fj3WlrDXqwn-AUCjK6P_aGbKBfmpyHlIzHDwD9P99mTFilOv10dQvdf4POfa3z4QRK-dnPhDmQHkrsDdiJ_H_AaDxZYt0cfEi-BY')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-on-secondary-container/40 to-transparent z-10"></div>
+<div class="absolute inset-0 flex flex-col justify-end p-6 z-20">
+<div class="glass-card p-3 rounded-xl">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Kids Health</h3>
+</div>
+</div>
+</div>
+<!-- 6. Herbal & Natural (Small Card) -->
+<div class="md:col-span-4 bento-item group cursor-pointer h-[240px]">
+<div class="absolute inset-0 z-0 bg-cover bg-center category-image" data-alt="Macro close-up of a vibrant green leaf with glistening dew drops, reflecting a bright, sun-drenched natural environment. The composition is clean and minimalist, focusing on the organic texture and the deep emerald green color of the foliage. The aesthetic is extremely fresh, breathing life and purity into the brand's natural herbal collection." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD12l_1ORACbcA_znFqb7tCIH7YXnNiy3doFfhAFayOJxpoymJcyIOZWilsEX_RXr3n08HAvWSVObGbBEz-30-1Fzh-HRVPcg6FE_jelLztqoqGZQSlK8uhYhtpYWxsb1Jfep1CATNOs50Uxw9KHWXGnGSnZXzyFBf4YgJGmmv6Pzft3pvYSu0qYPDo6mTtwD6I8mg_GT-tOkLUSSfb1PywmKXZbHhP7_JwQrtAizPUshDDpSEX7h0-lJ2ZbirZ49itezcOiuARQ3I')">
+</div>
+<div class="absolute inset-0 bg-primary/20 z-10 backdrop-blur-[1px]"></div>
+<div class="absolute inset-0 flex flex-col justify-end p-6 z-20">
+<div class="glass-card p-3 rounded-xl">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Herbal &amp; Natural</h3>
+</div>
+</div>
+</div>
+</div>
+<!-- Featured Section Integration (Micro-interaction) -->
+<section class="mt-20">
+<div class="flex justify-between items-center mb-8">
+<h2 class="font-headline-md text-headline-md">Trending in India</h2>
+<a class="text-primary font-medium flex items-center gap-2 hover:gap-3 transition-all duration-300" href="#">
+                    See All <span class="material-symbols-outlined">chevron_right</span>
+</a>
+</div>
+<div class="flex gap-bento-gap overflow-x-auto pb-8 snap-x snap-mandatory no-scrollbar">
+<!-- Product Card 1 -->
+<div class="min-w-[280px] bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition-shadow duration-300 snap-start flex-shrink-0">
+<div class="h-48 w-full rounded-2xl bg-surface-container mb-4 flex items-center justify-center relative">
+<img class="h-40 object-contain" data-alt="A premium bottle of multivitamins for men, featuring a minimal label with elegant typography, placed on a marble surface with soft shadows. High-end luxury supplement photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsx3wRZZSE09bSgzObLTtUR23jCWaSPIaXCldM0lc1owAUNo_CQyuQof3TKqgcLFcm628PlpWX14hRrRa1XlJS8zMtSEGRQatIoNfLCKN0tZO38Qr3E3vpBXWIa0TPmSN9_GygvuUnHB3UEeSz_EYLdopEp9pwsNPj7D9x0lpVwPY199mnFkC8OikT7Ta4-UphEyIdqEcI_E9LCeosgHco_QqnThjIN1bhNscBLHbMNWtpdYkuFm66HAvOCdOyvvPV6q_Ow0h_i7Y"/>
+<span class="absolute top-3 left-3 bg-primary-container text-on-primary-container font-label-caps text-[10px] px-2 py-1 rounded-full">BEST SELLER</span>
+</div>
+<h4 class="font-body-md font-bold text-on-surface">Vitakart Daily One</h4>
+<p class="text-[12px] text-on-surface-variant mb-2">60 Tablets • Men's Multivitamin</p>
+<div class="flex justify-between items-center mt-4">
+<div class="flex flex-col">
+<span class="text-error font-price-display text-price-display">₹849</span>
+<span class="text-[12px] text-on-surface-variant line-through opacity-40">₹1,199</span>
+</div>
+<button class="bg-primary text-white p-2 rounded-xl hover:bg-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="min-w-[280px] bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition-shadow duration-300 snap-start flex-shrink-0">
+<div class="h-48 w-full rounded-2xl bg-surface-container mb-4 flex items-center justify-center relative">
+<img class="h-40 object-contain" data-alt="Modern Ayurvedic Ashwagandha KSM-66 supplement jar, sleek amber glass with a metallic cap. Stylized with raw ashwagandha root in the background. Ultra-modern wellness aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_Zyf3fgd2_rI6zdQSSLnpc26Vb7rkx6NmVVcbD6QkXlfxrPhzwZKgwLFzLYsFCM6LUZBY-RVuWrDIvSuFq3XbnUW1pMix4BqgqB723_IzM-eLnv-boSf-Wc-8YDNZV1_QL4u4Uhnk09lzacdUfUsWglbSL2Cutn9Uinyg5M7JVKEkqtNTuQsPW8klg7ImVKmmmsCTYAHFR0_G9sZ0EbdUID8bzv20EsIWoqgV2YuZmTRLkgIddIKYYylNk6k7IbVcf4K8GQ7JGw8"/>
+<span class="absolute top-3 left-3 bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-1 rounded-full">LAB TESTED</span>
+</div>
+<h4 class="font-body-md font-bold text-on-surface">Pure Ashwagandha KSM-66</h4>
+<p class="text-[12px] text-on-surface-variant mb-2">500mg • Stress &amp; Anxiety Relief</p>
+<div class="flex justify-between items-center mt-4">
+<div class="flex flex-col">
+<span class="text-error font-price-display text-price-display">₹699</span>
+<span class="text-[12px] text-on-surface-variant line-through opacity-40">₹899</span>
+</div>
+<button class="bg-primary text-white p-2 rounded-xl hover:bg-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="min-w-[280px] bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition-shadow duration-300 snap-start flex-shrink-0">
+<div class="h-48 w-full rounded-2xl bg-surface-container mb-4 flex items-center justify-center relative">
+<img class="h-40 object-contain" data-alt="High-performance whey protein isolate pouch, matte white packaging with emerald green accents. Professional sports supplement photography against a clean, clinical background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSW3_X-q0Qb52Tf9Rq1k5lfVqCRc6vNr8FsWOgMyJk5MlfM3Z-UQucPwA4eMRImHmIXysobktwGSc6OVDhZjZfz-klhSpQKf46pZ3IwjpzWdMq2ieRcz0CGL2WIH_RyabPC2qbXbvQ53BGY3ujE5PsHI07Wgw2fEOTr3BsQPy6yzhpPRidJhI9KQwJbkHnje6cfHRUajJgrnFEoIshwzD7_wk7wJX1eciiLn58Wuow38V75Tx-M-YRryoKCX7784-GoSrE4xB0l9E"/>
+</div>
+<h4 class="font-body-md font-bold text-on-surface">Isolate Whey Protein</h4>
+<p class="text-[12px] text-on-surface-variant mb-2">2kg • Swiss Chocolate Bliss</p>
+<div class="flex justify-between items-center mt-4">
+<div class="flex flex-col">
+<span class="text-error font-price-display text-price-display">₹5,499</span>
+<span class="text-[12px] text-on-surface-variant line-through opacity-40">₹6,299</span>
+</div>
+<button class="bg-primary text-white p-2 rounded-xl hover:bg-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="min-w-[280px] bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition-shadow duration-300 snap-start flex-shrink-0">
+<div class="h-48 w-full rounded-2xl bg-surface-container mb-4 flex items-center justify-center relative">
+<img class="h-40 object-contain" data-alt="A minimalist dropper bottle for Marine Collagen Peptides, elegant frosted glass. Surrounding it are small white flowers. Soft, ethereal lighting, high-end beauty photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ4BUNYbwAfDHE4Hyx71q7743DcXwiw1XEGsrvMQHVO2a33j6gjf1DgKLyxioyOU9GGRWgrfuSEdNNyY98Dg_42Pfos_bKasjPd3NowK5GtKpD8DM8YkHxF3AUowRraDCO-05I5DVKwGT0TL4hSgn5zRxPVrvBxACk8-k46optSUVSvPIILTgPeJWbK5g--9cde75A81CR-BPXHnYNf3-EGgwPIavfdfPb1XRktDtHenDhfgTcn_5VQs0_Ej9-HswDUgpk1_KY9EM"/>
+</div>
+<h4 class="font-body-md font-bold text-on-surface">Marine Collagen Peptides</h4>
+<p class="text-[12px] text-on-surface-variant mb-2">200g • Skin, Hair &amp; Nails</p>
+<div class="flex justify-between items-center mt-4">
+<div class="flex flex-col">
+<span class="text-error font-price-display text-price-display">₹2,199</span>
+<span class="text-[12px] text-on-surface-variant line-through opacity-40">₹2,800</span>
+</div>
+<button class="bg-primary text-white p-2 rounded-xl hover:bg-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-high full-width mt-12 border-t border-outline-variant/10">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-bento-gap px-margin-desktop py-12 max-w-container-max mx-auto">
+<div class="col-span-2 md:col-span-1">
+<span class="font-headline-md text-headline-md text-primary block mb-4">Vitakart</span>
+<p class="font-body-md text-body-md text-on-surface-variant pr-8">
+                    Elevating daily wellness through clinical excellence and Ayurvedic wisdom. Trusted by 2M+ health seekers.
+                </p>
+<div class="flex gap-4 mt-6">
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:scale-110 transition-transform">public</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:scale-110 transition-transform">share</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:scale-110 transition-transform">mail</span>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-label-caps text-secondary mb-2">SHOP</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Vitamins</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Modern Ayurveda</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Sports Nutrition</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-label-caps text-secondary mb-2">EXPERTISE</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Consult an Expert</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Lab Tests</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Our Science</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-label-caps text-secondary mb-2">COMPANY</span>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">About Us</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Careers</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-all underline-offset-4 hover:underline" href="#">Privacy Policy</a>
+</div>
+</div>
+<div class="px-margin-desktop py-8 border-t border-outline-variant/10 max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-md text-body-md text-on-surface-variant/60">
+                © 2024 Vitakart Wellness. Cultivating clinical excellence.
+            </p>
+<div class="flex gap-6">
+<img alt="Visa" class="h-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjgkKz92W6NXnoTIihkOEdzCP-d_O3PIGEZJc7tcHWSMx7tKtQrOMHTBmXpfLQ9wCSxMTSXzt5Xvn-Qn_FR0OxAe9FU8aTBfR06fg6UEJhRy6L3Jpq8yol500mOQrfTgYI0t_65-VO0boeYP3D9a-WMw1dzSCPvK4Pm6zAofT9pxBmzSCxBfpSLPWXI8ytzRRprUT3K-KKfAd-cPD-eww6FAZSQnZzt2tjNfexBtX-5kKy4_oRsLoD484H4QUZyyWkKIqeUf4ckSA"/>
+<img alt="Mastercard" class="h-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDG0J2c7fimZGy6z1-6N3NkgMx8Dum3outFZrAwIVt4Cn-RYnpFBMIqk5fMAJPvU6Z0XV9noOPOkeHAcx3Hx0zadVu58w_z95a5iBuAeSmzaCEOdzIs3YYdu_RLKBUNaE3NoBdwaAy3PKMuRnJQ9QutWfsT4RUL32HzBZXZdx5E8wzg92HSJYdw0ozX2XRe7lmWgU-Z7nUIZZF4rZXGZC7bPsFVqeqYt8MNUSpb3bugPucMM9SbIKiNLJNCpw3AS9RV7l9jt2RIo0E"/>
+<img alt="UPI" class="h-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdR_ERENg5crjCwVIQI-4gVNCeeIFalTR4G6RpStLEqtK3qnzFKfrQJW5qc54JlGwY37rGJF3x6XZLG-L1JzoetuvhUaN0t34oP5MAl1mpw8wgos0_nIQhZCHahmYILoBOHoiQyHCSFLjcQtJlAdNnfxludFcv7Dagy-j9fJ2dd7qL8WPVKejZmRVT6Q3KAvoCL4fhmNtoNT2lMNVxGj4t5XzG5pEBRnclp5SsZHuRmCoOL82iHcid5_3DHJzHKMISacFkuR73qiE"/>
+</div>
+</div>
+</footer>
+<script>
+        // Custom micro-interactions for the cards
+        document.querySelectorAll('.bento-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const icon = item.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.style.transform = 'translateX(5px)';
+                }
+            });
+            item.addEventListener('mouseleave', () => {
+                const icon = item.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.style.transform = 'translateX(0px)';
+                }
+            });
+        });
+
+        // Simple smooth horizontal scroll helper for carousels
+        const carousels = document.querySelectorAll('.no-scrollbar');
+        carousels.forEach(carousel => {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            carousel.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - carousel.offsetLeft;
+                scrollLeft = carousel.scrollLeft;
+            });
+            carousel.addEventListener('mouseleave', () => {
+                isDown = false;
+            });
+            carousel.addEventListener('mouseup', () => {
+                isDown = false;
+            });
+            carousel.addEventListener('mousemove', (e) => {
+                if(!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - carousel.offsetLeft;
+                const walk = (x - startX) * 2;
+                carousel.scrollLeft = scrollLeft - walk;
+            });
+        });
+    </script>
 </body></html>

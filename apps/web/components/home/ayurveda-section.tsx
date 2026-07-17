@@ -1,16 +1,24 @@
 // File: apps/web/components/home/ayurveda-section.tsx
-// Uses reusable ProductCardCompact component
+// Clean version using reusable components
 
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { ProductCardCompact, ProductCardCompactSkeleton } from "@/components/product/product-card-compact";
+import { ProductCardCompact } from "@/components/product/product-card-compact";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { CardSkeleton } from "@/components/shared/loading-state";
+import { FeatureCard } from "@/components/shared/feature-card";
+import { CategoryChip } from "@/components/shared/category-chip";
+import { categoriesApi } from "@/lib/api/categories";
 import { productsApi } from "@/lib/api/products";
 import { ROUTES } from "@/lib/constants/routes";
 
 const SUB_CATEGORIES = [
+  "All",
   "Ashwagandha",
   "Turmeric blends",
   "Beauty oils",
@@ -18,112 +26,145 @@ const SUB_CATEGORIES = [
 ];
 
 export function AyurvedaSection() {
-  const { data, isLoading } = useQuery({
+  const [activeFilter, setActiveFilter] = useState("All");
+
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["ayurveda-section"],
-    queryFn: () => productsApi.getAll({ page: 1, pageSize: 6 }),
+    queryFn: async () => {
+      try {
+        const cats = await categoriesApi.getAll();
+        const ayurvedaCategory = cats.find(c =>
+          c.slug.toLowerCase().includes('ayurveda') ||
+          c.slug.toLowerCase().includes('herbal')
+        );
+        
+        if (ayurvedaCategory) {
+          const result = await productsApi.getByCategory(ayurvedaCategory.id, { page: 1, pageSize: 8 });
+          return result.items;
+        }
+      } catch (err) {
+        console.log('Falling back to all products');
+      }
+      
+      const result = await productsApi.getAll({ page: 1, pageSize: 8 });
+      return result.items;
+    },
     staleTime: 5 * 60 * 1000,
   });
 
-  const products = data?.items ?? [];
+  const products = data ?? [];
 
   return (
     <section className="flex flex-col gap-4">
       {/* ==========================================
-           MOBILE VIEW — Compact
+           MOBILE VIEW
            ========================================== */}
       <div className="lg:hidden flex flex-col gap-3">
-        {/* Feature Card - Dark */}
-        <div className="rounded-2xl bg-[#0A0A0A] p-4 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] to-[#10B981]/30" />
-          <div className="relative z-10 flex items-center justify-between gap-3">
-            <div className="flex-1 text-white">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-white/70 mb-1">
-                Curated ayurveda
-              </div>
-              <h3 className="text-lg font-bold">Herbal & Ayurveda</h3>
-              <p className="text-xs text-white/70 mt-1">Wellness rituals for you</p>
-            </div>
-            <button className="h-10 rounded-full bg-[#10B981] px-4 text-xs font-bold text-white transition-all duration-300 hover:scale-105 flex items-center gap-1.5 whitespace-nowrap">
-              Shop
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
+        {/* Feature Card - Dark variant */}
+        <FeatureCard
+          tag="Curated ayurveda"
+          title="Herbal & Ayurveda"
+          subtitle="Wellness rituals for you"
+          ctaLabel="Shop"
+          variant="dark"
+          compact
+        />
 
         {/* Chips */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button className="flex-shrink-0 px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-xs font-semibold">
-            All
-          </button>
           {SUB_CATEGORIES.map((cat) => (
-            <button
+            <CategoryChip
               key={cat}
-              className="flex-shrink-0 px-4 py-2 rounded-full bg-[#F5F1E8] text-[#6B665D] text-xs font-semibold hover:bg-[#0A0A0A] hover:text-white transition-colors whitespace-nowrap"
-            >
-              {cat}
-            </button>
+              label={cat}
+              active={activeFilter === cat}
+              onClick={() => setActiveFilter(cat)}
+            />
           ))}
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => <ProductCardCompactSkeleton key={i} />)
-            : products.slice(0, 4).map((product, i) => (
-                <ProductCardCompact key={product.id} product={product} index={i} />
-              ))}
-        </div>
+        {/* Content */}
+        {error && <ErrorState onRetry={() => refetch()} />}
+        
+        {!error && !isLoading && products.length === 0 && (
+          <EmptyState
+            title="No ayurveda products yet"
+            description="Check back soon!"
+          />
+        )}
 
-        {/* View all button */}
-        <Link
-          href={ROUTES.PRODUCTS}
-          className="inline-flex items-center justify-center gap-2 h-11 rounded-full border border-[#E9E1D2] text-sm font-semibold text-[#0A0A0A] hover:border-[#10B981] hover:text-[#10B981] transition-all"
-        >
-          View all ayurveda
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        {!error && (isLoading || products.length > 0) && (
+          <div className="grid grid-cols-2 gap-3">
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
+              : products.slice(0, 4).map((product, i) => (
+                  <ProductCardCompact key={product.id} product={product} index={i} />
+                ))}
+          </div>
+        )}
+
+        {/* View all */}
+        {!error && products.length > 0 && (
+          <Link
+            href={ROUTES.PRODUCTS}
+            className="inline-flex items-center justify-center gap-2 h-11 rounded-full border border-[#E9E1D2] text-sm font-semibold text-[#0A0A0A] hover:border-[#10B981] hover:text-[#10B981] transition-all"
+          >
+            View all ayurveda
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        )}
       </div>
 
       {/* ==========================================
-           DESKTOP VIEW — Dark Sidebar + Grid
+           DESKTOP VIEW
            ========================================== */}
       <div className="hidden lg:grid lg:grid-cols-[260px_minmax(0,1fr)] gap-5">
         {/* Dark Sidebar */}
         <aside className="rounded-2xl border border-[#E9E1D2] bg-[#0A0A0A] p-5 text-white shadow-sm">
-          <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-md">
-            <div className="text-xs font-semibold uppercase tracking-wider text-white/70">Curated ayurveda</div>
-            <h3 className="mt-2 text-xl font-bold">Herbal & Ayurveda</h3>
-            <p className="mt-2 text-sm text-white/75">Foundational wellness rituals for stress, immunity and glow.</p>
-            <button className="mt-4 min-h-11 rounded-full bg-[#10B981] px-4 py-3 text-xs font-bold transition-all duration-300 hover:scale-105">
-              Shop Rituals
-            </button>
-          </div>
+          <FeatureCard
+            tag="Curated ayurveda"
+            title="Herbal & Ayurveda"
+            subtitle="Foundational wellness rituals for stress, immunity and glow."
+            ctaLabel="Shop Rituals"
+            variant="dark"
+            className="!p-4"
+          />
 
           <div className="mt-5 space-y-2 text-sm">
-            <div className="rounded-xl bg-white/10 px-4 py-3 font-semibold">Ashwagandha</div>
-            {SUB_CATEGORIES.slice(1).map((cat) => (
-              <div key={cat} className="rounded-xl px-4 py-3 text-white/70 hover:bg-white/10 cursor-pointer transition-colors">
+            {SUB_CATEGORIES.map((cat, i) => (
+              <div
+                key={cat}
+                className={`rounded-xl px-4 py-3 cursor-pointer transition-colors ${
+                  i === 0
+                    ? "bg-white/10 font-semibold text-white"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
                 {cat}
               </div>
             ))}
           </div>
         </aside>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-4 gap-4">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => <ProductCardCompactSkeleton key={i} />)
-            : products.slice(0, 8).map((product, i) => (
-                <ProductCardCompact key={product.id} product={product} index={i} />
-              ))}
-          {!isLoading && products.length < 8 && (
-            <>
-              {Array.from({ length: 8 - products.length }).map((_, i) => (
-                <ProductCardCompactSkeleton key={i} />
-              ))}
-            </>
-          )}
-        </div>
+        {/* Products */}
+        {error && <ErrorState onRetry={() => refetch()} />}
+        
+        {!error && !isLoading && products.length === 0 && (
+          <EmptyState
+            title="No ayurveda products yet"
+            description="Products will appear here soon!"
+            size="lg"
+          />
+        )}
+
+        {!error && (isLoading || products.length > 0) && (
+          <div className="grid grid-cols-4 gap-4">
+            {isLoading
+              ? Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)
+              : products.slice(0, 8).map((product, i) => (
+                  <ProductCardCompact key={product.id} product={product} index={i} />
+                ))}
+          </div>
+        )}
       </div>
     </section>
   );

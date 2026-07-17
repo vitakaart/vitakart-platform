@@ -1,12 +1,13 @@
 // File: apps/web/components/product/product-card-compact.tsx
-// Reusable compact product card — used in vitamins, ayurveda, other sections
+// Fixed: Proper image handling + fallback
 
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Plus, Package } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
+import { ProductBadges } from "@/components/products/product-badges";
 import type { Product } from "@/types/api";
 
 interface ProductCardCompactProps {
@@ -20,74 +21,92 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
   return (
     <Link
       href={ROUTES.PRODUCT_DETAIL(product.slug)}
-      className="rounded-2xl border border-[#E9E1D2] bg-[#FFFDF8] p-3 shadow-sm hover:shadow-md transition-all group"
+      className="block rounded-2xl border border-[#E9E1D2] bg-[#FFFDF8] shadow-sm hover:shadow-md transition-all group overflow-hidden"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      {/* Image container */}
-      <div className="rounded-xl bg-[#F5F1E8] ">
-        <div className="relative h-30 w-full">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover rounded-2xl  group-hover:scale-103 transition-transform duration-300"
-              sizes="200px"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
-          )}
+      {/* Image Container — Fixed height + proper containment */}
+      <div className="relative aspect-[3/2] rounded-2xl bg-[#F5F1E8] overflow-hidden">
+        {/* Badges */}
+        <div className="absolute top-2 left-2 z-10">
+          <ProductBadges product={product} />
         </div>
+
+        {/* Image */}
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            className="object-contain  rounded-2xl group-hover:scale-104 transition-transform duration-300"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[#6B665D]">
+            <Package className="w-12 h-12" />
+          </div>
+        )}
       </div>
 
-      {/* Brand */}
-      <div className="mt-2 text-[10px] font-semibold uppercase text-[#6B665D] truncate">
-        {product.brand || "Vitakart"}
-      </div>
+      {/* Content */}
+      <div className="p-3">
+        {/* Brand */}
+        <div className="text-[10px] font-semibold uppercase text-[#6B665D] tracking-wider truncate">
+          {product.brand || "Vitakart"}
+        </div>
 
-      {/* Name */}
-      <div className="mt-1 text-xs md:text-sm font-bold text-[#0A0A0A] line-clamp-1">
-        {product.name}
-      </div>
+        {/* Name */}
+        <div className="mt-1 text-sm font-bold text-[#0A0A0A] line-clamp-1">
+          {product.name}
+        </div>
 
-      {/* Rating */}
-      <div className="mt-1.5 flex items-center gap-0.5 text-yellow-500">
-        {[1, 2, 3, 4, 5].map((s) => (
-          <Star key={s} size={10} fill="currentColor" />
-        ))}
-        <span className="text-[10px] text-[#6B665D] ml-1">4.7</span>
-      </div>
+        {/* Rating */}
+        <div className="mt-1.5 flex items-center gap-0.5 text-yellow-500">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <Star key={s} size={10} fill="currentColor" />
+          ))}
+          <span className="text-[10px] text-[#6B665D] ml-1">4.7 (1.2k)</span>
+        </div>
 
-      {/* Price + Button */}
-      <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm md:text-base font-black text-red-600">
-          ₹{(product.discountPrice ?? product.price).toLocaleString("en-IN")}
-        </span>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            // TODO: Add to cart
-          }}
-          className="h-8 rounded-lg border border-[#E9E1D2] px-2.5 text-[10px] font-bold hover:bg-[#10B981] hover:text-white hover:border-[#10B981] transition-all"
-        >
-          Add
-        </button>
+        {/* Price + Add button */}
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="text-base font-black text-red-600 leading-tight">
+              ₹{(product.discountPrice ?? product.price).toLocaleString("en-IN")}
+            </div>
+            {hasDiscount && (
+              <div className="text-[10px] text-[#6B665D] line-through leading-tight">
+                ₹{product.price.toLocaleString("en-IN")}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              // TODO: Add to cart
+            }}
+            className="w-8 h-8 rounded-full bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white flex items-center justify-center transition-all hover:scale-110 flex-shrink-0"
+            aria-label="Add to cart"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </Link>
   );
 }
 
-// Skeleton loader
 export function ProductCardCompactSkeleton() {
   return (
-    <div className="rounded-2xl border border-[#E9E1D2] bg-[#FFFDF8] p-3 animate-pulse">
-      <div className="h-24 rounded-xl bg-[#F5F1E8]" />
-      <div className="mt-2 h-3 w-20 rounded bg-[#F5F1E8]" />
-      <div className="mt-2 h-4 w-32 rounded bg-[#F5F1E8]" />
-      <div className="mt-2 h-3 w-16 rounded bg-[#F5F1E8]" />
-      <div className="mt-3 flex items-center justify-between">
-        <div className="h-5 w-14 rounded bg-[#F5F1E8]" />
-        <div className="h-8 w-12 rounded-lg bg-[#F5F1E8]" />
+    <div className="rounded-2xl border border-[#E9E1D2] bg-[#FFFDF8] overflow-hidden">
+      <div className="aspect-square bg-[#F5F1E8] animate-pulse" />
+      <div className="p-3 space-y-2">
+        <div className="h-3 w-20 rounded bg-[#F5F1E8] animate-pulse" />
+        <div className="h-4 w-32 rounded bg-[#F5F1E8] animate-pulse" />
+        <div className="h-3 w-24 rounded bg-[#F5F1E8] animate-pulse" />
+        <div className="flex items-center justify-between">
+          <div className="h-5 w-16 rounded bg-[#F5F1E8] animate-pulse" />
+          <div className="h-8 w-8 rounded-full bg-[#F5F1E8] animate-pulse" />
+        </div>
       </div>
     </div>
   );
