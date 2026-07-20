@@ -9,6 +9,10 @@ import { Star, Plus, Package } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { ProductBadges } from "@/components/products/product-badges";
 import type { Product } from "@/types/api";
+import { useCart } from "@/lib/hooks/use-cart";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface ProductCardCompactProps {
   product: Product;
@@ -17,7 +21,21 @@ interface ProductCardCompactProps {
 
 export function ProductCardCompact({ product, index = 0 }: ProductCardCompactProps) {
   const hasDiscount = product.discountPrice && product.discountPrice < product.price;
+  const { addToCart, isAdding } = useCart();
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart");
+      router.push(ROUTES.LOGIN);
+      return;
+    }
+
+    addToCart({ productId: product.id, quantity: 1 });
+  };
   return (
     <Link
       href={ROUTES.PRODUCT_DETAIL(product.slug)}
@@ -80,11 +98,9 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
             )}
           </div>
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              // TODO: Add to cart
-            }}
-            className="w-8 h-8 rounded-full bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white flex items-center justify-center transition-all hover:scale-110 flex-shrink-0"
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="w-8 h-8 rounded-full bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white flex items-center justify-center transition-all hover:scale-110 flex-shrink-0 disabled:opacity-50"
             aria-label="Add to cart"
           >
             <Plus className="w-4 h-4" />

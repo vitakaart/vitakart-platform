@@ -6,6 +6,7 @@ using api.API.Middleware;
 using api.API.RateLimiting;
 using api.Application.Interfaces;
 using api.Application.Services;
+using api.Application.Services.Order;
 using api.Infrastructure.Data;
 using api.Infrastructure.Repositories;
 using DotNetEnv;
@@ -62,7 +63,13 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // ============================================
 // CONTROLLERS + ROUTING
 // ============================================
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()
+        );
+    });
 
 builder.Services.Configure<Microsoft.AspNetCore.Routing.RouteOptions>(options =>
 {
@@ -92,10 +99,13 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
@@ -132,7 +142,7 @@ builder.Services.AddCors(options =>
 // ============================================
 // JWT AUTHENTICATION
 // ============================================
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") 
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? throw new Exception("JWT_SECRET not set");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "vitakart-api";
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "vitakart-apps";

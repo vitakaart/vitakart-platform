@@ -1,11 +1,10 @@
 // File: apps/web/components/layout/navbar/index.tsx
-// Main navbar wrapper — combines all pieces
+// Remove CategoriesBar import since MegaMenu is now inside DesktopNav
 
 "use client";
 
 import { useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
-import { CategoriesBar } from "./categories-bar";
 import { DesktopNav } from "./desktop-nav";
 import { MobileHeader } from "./mobile-header";
 import { MobileMenu } from "./mobile-menu";
@@ -17,35 +16,22 @@ export function Navbar() {
 
   return (
     <>
-      {/* Top Announcement */}
       <AnnouncementBar />
-
-      {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
+      
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 backdrop-blur-md bg-white/95">
         <div className="container-app">
-          {/* Mobile Header */}
           <MobileHeader
             isMenuOpen={isMenuOpen}
             onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
             onSearchOpen={() => setIsSearchOpen(true)}
           />
-
-          {/* Desktop Navigation */}
           <DesktopNav />
-
-          {/* Desktop Categories Bar */}
-          <CategoriesBar />
+          {/* CategoriesBar removed - now integrated into DesktopNav as MegaMenu */}
         </div>
       </header>
 
-      {/* Mobile Menu (Slide-out) */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-
-      {/* Mobile Search (Full-screen) */}
-      <MobileSearch
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
+      <MobileSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

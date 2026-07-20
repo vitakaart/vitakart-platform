@@ -43,7 +43,7 @@ export function BestSellers() {
       {!error && (isLoading || products.length > 0) && (
         <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
           {isLoading
-            ? Array.from({ length: 5 }).map((_, i) => <ProductCardSkeleton key={i} />)
+            ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : products.map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />
               ))}

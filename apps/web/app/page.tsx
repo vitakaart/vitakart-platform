@@ -15,12 +15,12 @@ import { PartnerBrands } from "@/components/home/partner-brands";
 import { Testimonials } from "@/components/home/testimonials";
 import { InstagramGrid } from "@/components/home/instagram-grid";
 import { NewsletterCTA } from "@/components/home/newsletter-cta";
-import { FooterCategories } from "@/components/home/footer-categories";
+
 
 export default function HomePage() {
   return (
     <MainLayout>
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
+      <main className="mx-auto flex container-app flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
         <HeroSlider />
         <CategoryGrid />
         <FeaturedProducts />
@@ -36,7 +36,7 @@ export default function HomePage() {
         <Testimonials />
         <InstagramGrid />
         <NewsletterCTA />
-        <FooterCategories />
+        <CategoryGrid />
       </main>
     </MainLayout>
   );

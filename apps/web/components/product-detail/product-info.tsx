@@ -8,6 +8,10 @@ import { Star, Heart, MapPin, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { PackSizeSelector } from "./pack-size-selector";
 import type { Product } from "@/types/api";
+import { useCart } from "@/lib/hooks/use-cart";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/constants/routes";
 
 interface ProductInfoProps {
   product: Product;
@@ -17,14 +21,21 @@ interface ProductInfoProps {
 export function ProductInfo({ product, categoryName }: ProductInfoProps) {
   const [selectedSize, setSelectedSize] = useState("60");
   const [isWishlisted, setIsWishlisted] = useState(false);
-
+  const { addToCart, isAdding } = useCart();
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
   const hasDiscount = product.discountPrice && product.discountPrice < product.price;
   const discountPercent = hasDiscount
     ? Math.round(((product.price - (product.discountPrice ?? 0)) / product.price) * 100)
     : 0;
 
   const handleAddToCart = () => {
-    toast.success(`Added ${product.name} to cart!`);
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart");
+      router.push(ROUTES.LOGIN);
+      return;
+    }
+    addToCart({ productId: product.id, quantity: 1 });
   };
 
   const handleBuyNow = () => {
@@ -43,9 +54,8 @@ export function ProductInfo({ product, categoryName }: ProductInfoProps) {
           className="w-10 h-10 flex items-center justify-center rounded-full bg-[#F5F1E8] hover:bg-red-50 transition-colors"
         >
           <Heart
-            className={`w-5 h-5 transition-colors ${
-              isWishlisted ? "fill-red-500 text-red-500" : "text-[#6B665D]"
-            }`}
+            className={`w-5 h-5 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : "text-[#6B665D]"
+              }`}
           />
         </button>
       </div>
@@ -98,9 +108,10 @@ export function ProductInfo({ product, categoryName }: ProductInfoProps) {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={handleAddToCart}
-          className="h-12 rounded-xl bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white font-bold shadow-md transition-all hover:scale-[1.02]"
+          disabled={isAdding}
+          className="h-12 rounded-xl bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white font-bold shadow-md transition-all hover:scale-[1.02] disabled:opacity-50"
         >
-          Add to Cart
+          {isAdding ? "Adding..." : "Add to Cart"}
         </button>
         <button
           onClick={handleBuyNow}

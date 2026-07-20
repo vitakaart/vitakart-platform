@@ -16,7 +16,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   return (
     <Link
       href={ROUTES.PRODUCT_DETAIL(product.slug)}
-      className="w-full md:w-[189px] flex-shrink-0 rounded-3xl border border-[#E9E1D2] bg-[#FFFDF8] p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group"
+      className="w-[180px]  md:w-[189px] flex-shrink-0 rounded-3xl border border-[#E9E1D2] bg-[#FFFDF8] p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md group"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="relative rounded-3xl bg-[#F5F1E8]">

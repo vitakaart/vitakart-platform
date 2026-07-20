@@ -11,6 +11,8 @@ public interface IUnitOfWork
     IUserRepository Users { get; }
     IRefreshTokenRepository RefreshTokens { get; }
     ITenantRepository Tenants { get; }
+    ICartRepository Carts { get; }
+    IOrderRepository Orders { get; }  // ← NEW LINE
 
     // Save all changes in one transaction
     Task<int> SaveChangesAsync();

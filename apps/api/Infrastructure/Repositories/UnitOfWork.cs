@@ -16,9 +16,11 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     // Lazy loaded repositories
     private ICategoryRepository? _categories;
     private IProductRepository? _products;
+    private ICartRepository? _carts;
     private IUserRepository? _users;
     private IRefreshTokenRepository? _refreshTokens;
     private ITenantRepository? _tenants;
+    private IOrderRepository? _orders;  // ← NEW
 
     public UnitOfWork(AppDbContext context, ITenantContext tenantContext)
     {
@@ -29,6 +31,9 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     // Lazy load repositories (created only when accessed)
     public ICategoryRepository Categories =>
         _categories ??= new CategoryRepository(_context, _tenantContext);
+
+    public ICartRepository Carts =>
+        _carts ??= new CartRepository(_context, _tenantContext);
 
     public IProductRepository Products =>
         _products ??= new ProductRepository(_context, _tenantContext);
@@ -41,6 +46,10 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 
     public ITenantRepository Tenants =>
         _tenants ??= new TenantRepository(_context, _tenantContext);
+
+    // ← NEW: Order repository
+    public IOrderRepository Orders =>
+        _orders ??= new OrderRepository(_context, _tenantContext);
 
     public async Task<int> SaveChangesAsync()
     {

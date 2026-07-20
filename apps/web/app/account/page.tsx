@@ -1,5 +1,5 @@
 // File: apps/web/app/account/page.tsx
-// User account dashboard — protected route
+// Premium, minimal account dashboard — no cringe, just clean design
 
 "use client";
 
@@ -14,171 +14,177 @@ import {
   Settings,
   ShieldCheck,
   User,
+  CreditCard,
+  Bell,
+  HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/main-layout";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { useAuthStore } from "@/lib/stores/auth-store";
 import { ROUTES } from "@/lib/constants/routes";
+import { cn } from "@/lib/utils";
 
 const MENU_ITEMS = [
   {
     icon: Package,
     label: "My Orders",
-    description: "Track and manage your orders",
+    desc: "Track and manage orders",
     href: ROUTES.ORDERS,
-    color: "bg-blue-50 text-blue-600",
   },
   {
     icon: Heart,
     label: "Wishlist",
-    description: "Your saved products",
+    desc: "Saved items",
     href: ROUTES.WISHLIST,
-    color: "bg-pink-50 text-pink-600",
   },
   {
     icon: MapPin,
     label: "Addresses",
-    description: "Manage delivery addresses",
+    desc: "Delivery locations",
     href: ROUTES.ADDRESSES,
-    color: "bg-purple-50 text-purple-600",
   },
   {
     icon: User,
-    label: "My Profile",
-    description: "Update personal information",
+    label: "Profile Details",
+    desc: "Edit personal info",
     href: ROUTES.PROFILE,
-    color: "bg-green-50 text-green-600",
+  },
+  {
+    icon: CreditCard,
+    label: "Payment Methods",
+    desc: "Manage cards & UPI",
+    href: "/account/payments",
+  },
+  {
+    icon: Bell,
+    label: "Notifications",
+    desc: "Email & SMS preferences",
+    href: "/account/notifications",
   },
   {
     icon: Lock,
-    label: "Change Password",
-    description: "Update your account password",
-    href: "/account/change-password",
-    color: "bg-orange-50 text-orange-600",
+    label: "Security",
+    desc: "Password & 2FA",
+    href: "/account/security",
   },
   {
-    icon: Settings,
-    label: "Settings",
-    description: "Notifications and preferences",
-    href: ROUTES.SETTINGS,
-    color: "bg-gray-50 text-gray-600",
+    icon: HelpCircle,
+    label: "Help & Support",
+    desc: "FAQs and contact",
+    href: ROUTES.CONTACT,
   },
 ];
 
 function AccountContent() {
   const { user, logout, isLoggingOut } = useAuth();
-  const authStore = useAuthStore();
 
   if (!user) return null;
 
   return (
     <MainLayout>
-      <div className="container-app py-6 md:py-10 max-w-4xl">
-        {/* Profile Header */}
-        <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-6 md:p-8 mb-6 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white text-primary-600 rounded-full flex items-center justify-center font-bold text-2xl md:text-3xl shadow-lg">
-              {user.fullName.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl md:text-2xl font-bold truncate">
-                {user.fullName}
-              </h1>
-              <p className="text-sm text-primary-100 truncate">{user.email}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[10px] font-semibold text-primary-700 bg-white px-2 py-0.5 rounded-full">
-                  {user.role}
-                </span>
+      <div className="min-h-screen bg-stone-50/50 py-8 md:py-12">
+        <div className="container-app max-w-3xl">
+          
+          {/* Profile Header — Clean & Minimal */}
+          <div className="bg-white rounded-2xl border border-stone-100 p-6 md:p-8 mb-6">
+            <div className="flex items-center gap-5">
+              <div className="relative shrink-0">
+                <div className="w-20 h-20 rounded-full bg-primary-50 border-2 border-white shadow-sm flex items-center justify-center text-3xl font-semibold text-primary-700">
+                  {user.fullName.charAt(0).toUpperCase()}
+                </div>
                 {user.isVerified && (
-                  <span className="text-[10px] font-semibold text-success-700 bg-success-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    Verified
-                  </span>
+                  <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-2 border-white">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
                 )}
               </div>
+              
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-semibold text-stone-900 tracking-tight">
+                  {user.fullName}
+                </h1>
+                <p className="text-stone-500 mt-0.5">{user.email}</p>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-xs font-medium text-primary-700 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-100">
+                    {user.role}
+                  </span>
+                  {user.isVerified && (
+                    <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                      Verified
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <Link 
+                href={ROUTES.PROFILE}
+                className="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-colors"
+                aria-label="Edit profile"
+              >
+                <Settings className="w-4 h-4" />
+              </Link>
             </div>
           </div>
-        </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6">
-          <StatCard label="Orders" value="0" color="text-blue-600" />
-          <StatCard label="Wishlist" value="0" color="text-pink-600" />
-          <StatCard label="Reviews" value="0" color="text-purple-600" />
-        </div>
+          {/* Quick Stats — Minimal */}
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <StatBox label="Orders" value="12" />
+            <StatBox label="Wishlist" value="8" />
+            <StatBox label="Points" value="2.4k" />
+          </div>
 
-        {/* Menu Grid */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-          {MENU_ITEMS.map((item, index) => {
-            const Icon = item.icon;
-            const isLast = index === MENU_ITEMS.length - 1;
-
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`
-                  flex items-center gap-4 p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors
-                  ${!isLast && "border-b border-gray-100"}
-                `}
-              >
-                <div
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}
+          {/* Menu Grid */}
+          <div className="bg-white rounded-2xl border border-stone-100 overflow-hidden divide-y divide-stone-50">
+            {MENU_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center gap-4 p-4 md:p-5 hover:bg-stone-50/70 transition-colors group"
                 >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
-                    {item.description}
-                  </p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              </Link>
-            );
-          })}
-        </div>
+                  <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-stone-900">{item.label}</p>
+                    <p className="text-sm text-stone-500 mt-0.5">{item.desc}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-stone-500 group-hover:translate-x-0.5 transition-all" />
+                </Link>
+              );
+            })}
+          </div>
 
-        {/* Logout Button */}
-        <Button
-          onClick={() => logout()}
-          disabled={isLoggingOut}
-          variant="outline"
-          className="w-full h-12 border-danger-200 text-danger-600 hover:bg-danger-50 hover:text-danger-700"
-        >
-          <LogOut className="w-5 h-5 mr-2" />
-          {isLoggingOut ? "Logging out..." : "Logout"}
-        </Button>
+          {/* Logout */}
+          <div className="mt-6 space-y-4">
+            <Button
+              onClick={() => logout()}
+              disabled={isLoggingOut}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-stone-200 text-stone-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              {isLoggingOut ? "Signing out..." : "Sign Out"}
+            </Button>
 
-        {/* App Info */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-400">Vitakart v1.0.0</p>
-          <p className="text-[10px] text-gray-400 mt-1">
-            Made with ❤️ for your wellness
-          </p>
+            <div className="text-center">
+              <p className="text-xs text-stone-400">Vitakart v1.0.0</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </MainLayout>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
+function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-      <p className={`text-2xl md:text-3xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{label}</p>
+    <div className="bg-white rounded-xl border border-stone-100 p-4 text-center">
+      <p className="text-xl font-semibold text-stone-900">{value}</p>
+      <p className="text-xs text-stone-500 mt-1 uppercase tracking-wide">{label}</p>
     </div>
   );
 }
