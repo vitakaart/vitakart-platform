@@ -59,7 +59,7 @@ export function OrdersFilterTabs({
       </div>
 
       {/* DESKTOP: Date tabs + Status dropdown */}
-      <div className="hidden lg:flex items-center gap-2">
+      <div className="hidden lg:flex items-center gap-4">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-1 min-w-0 pb-0.5">
           <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-stone-400 shrink-0 pr-1">
             <Calendar className="w-3 h-3" />

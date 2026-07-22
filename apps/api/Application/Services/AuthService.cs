@@ -326,6 +326,40 @@ public class AuthService : IAuthService
         return MapToUserInfo(targetUser);
     }
 
+
+    // ==========================================
+    // UPDATE PROFILE
+    // ==========================================
+    public async Task<ProfileUpdatedDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+    {
+        var user = await _unitOfWork.Users.GetFirstAsync(u =>
+            u.Id == userId && u.IsActive);
+
+        if (user == null)
+        {
+            throw new NotFoundException("User not found");
+        }
+
+        // Update fields
+        user.FullName = dto.FullName.Trim();
+        user.Phone = dto.Phone?.Trim();
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new ProfileUpdatedDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            Role = user.Role.ToRoleString(),
+            IsVerified = user.IsVerified
+        };
+    }
+
+
+
     // ==========================================
     // PRIVATE HELPERS
     // ==========================================
@@ -362,3 +396,4 @@ public class AuthService : IAuthService
         };
     }
 }
+

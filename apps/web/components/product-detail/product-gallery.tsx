@@ -45,7 +45,7 @@ export function ProductGallery({ images, productName, isBestSeller = false }: Pr
 
       {/* Thumbnails */}
       {displayImages.length > 1 && (
-        <div className="grid grid-cols-8 gap-2">
+        <div className="grid grid-cols-6 gap-2 md:grid-cols-8">
           {displayImages.slice(0, 4).map((img, i) => (
             <button
               key={i}

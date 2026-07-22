@@ -1,5 +1,5 @@
 // File: apps/web/components/product/product-card-compact.tsx
-// Fixed: Proper image handling + fallback
+// UPDATED — Added WishlistButton on image (top-right)
 
 "use client";
 
@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Star, Plus, Package } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { ProductBadges } from "@/components/products/product-badges";
+import { WishlistButton } from "@/components/wishlist/wishlist-button";  // ← ADD
 import type { Product } from "@/types/api";
 import { useCart } from "@/lib/hooks/use-cart";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -36,17 +37,23 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
 
     addToCart({ productId: product.id, quantity: 1 });
   };
+
   return (
     <Link
       href={ROUTES.PRODUCT_DETAIL(product.slug)}
       className="block rounded-2xl border border-[#E9E1D2] bg-[#FFFDF8] shadow-sm hover:shadow-md transition-all group overflow-hidden"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      {/* Image Container — Fixed height + proper containment */}
+      {/* Image Container */}
       <div className="relative aspect-[3/2] rounded-2xl bg-[#F5F1E8] overflow-hidden">
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10">
           <ProductBadges product={product} />
+        </div>
+
+        {/*  Wishlist Button */}
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistButton productId={product.id} size="sm" />
         </div>
 
         {/* Image */}
@@ -55,7 +62,7 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
             src={product.imageUrl}
             alt={product.name}
             fill
-            className="object-contain  rounded-2xl group-hover:scale-104 transition-transform duration-300"
+            className="object-contain rounded-2xl group-hover:scale-104 transition-transform duration-300"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
           />
         ) : (
@@ -67,17 +74,14 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
 
       {/* Content */}
       <div className="p-3">
-        {/* Brand */}
         <div className="text-[10px] font-semibold uppercase text-[#6B665D] tracking-wider truncate">
           {product.brand || "Vitakart"}
         </div>
 
-        {/* Name */}
         <div className="mt-1 text-sm font-bold text-[#0A0A0A] line-clamp-1">
           {product.name}
         </div>
 
-        {/* Rating */}
         <div className="mt-1.5 flex items-center gap-0.5 text-yellow-500">
           {[1, 2, 3, 4, 5].map((s) => (
             <Star key={s} size={10} fill="currentColor" />
@@ -85,9 +89,9 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
           <span className="text-[10px] text-[#6B665D] ml-1">4.7 (1.2k)</span>
         </div>
 
-        {/* Price + Add button */}
         <div className="mt-2 flex items-center justify-between gap-2">
-          <div className="flex-1 min-w-0">
+          <div className="flex flex-row gap-2 items-center">
+
             <div className="text-base font-black text-red-600 leading-tight">
               ₹{(product.discountPrice ?? product.price).toLocaleString("en-IN")}
             </div>

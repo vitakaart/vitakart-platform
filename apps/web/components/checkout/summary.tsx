@@ -7,9 +7,10 @@ interface Props {
   cart: Cart;
   onPlaceOrder: () => void;
   isSubmitting: boolean;
+  disabled?: boolean;
 }
 
-export function Summary({ cart, onPlaceOrder, isSubmitting }: Props) {
+export function Summary({ cart, onPlaceOrder, isSubmitting, disabled }: Props) {
   const freeShippingThreshold = 999;
   const amountForFreeShipping = Math.max(0, freeShippingThreshold - cart.subtotal);
   const progressPercent = Math.min(100, (cart.subtotal / freeShippingThreshold) * 100);
@@ -116,11 +117,17 @@ export function Summary({ cart, onPlaceOrder, isSubmitting }: Props) {
         <p className="text-[10px] text-[#6B665D] text-right mt-1">Including all taxes & fees</p>
       </div>
 
+
+      {disabled && (
+        <p className="text-xs text-red-500 font-semibold text-center bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
+          ⚠️ Please select a delivery address
+        </p>
+      )}
       {/* Place Order Button */}
       <button
         type="button"
         onClick={onPlaceOrder}
-        disabled={isSubmitting}
+        disabled={isSubmitting || disabled}
         className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold text-base shadow-lg shadow-primary-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2 group"
       >
         {isSubmitting ? (

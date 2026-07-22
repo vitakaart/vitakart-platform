@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ShoppingCart, ArrowRight, Sparkles, PackageSearch } from "lucide-react";
+import { ShoppingCart, Sparkles, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 import { ROUTES } from "@/lib/constants/routes";
 
 interface EmptyCartProps {
@@ -44,15 +46,12 @@ export function EmptyCart({ onClose }: EmptyCartProps) {
       </div>
 
       {/* Primary CTA */}
-      <Link
-        href={ROUTES.PRODUCTS}
-        onClick={onClose}
-        className="inline-flex items-center gap-2 h-12 px-8 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-sm font-bold shadow-lg shadow-primary-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] group"
-      >
-        <PackageSearch className="w-4 h-4" />
-        Start Shopping
-        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-      </Link>
+           <Link href={ROUTES.PRODUCTS}>
+          <Button className="bg-primary-500 hover:bg-primary-600 text-white h-11">
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Start Shopping
+          </Button>
+        </Link>
 
       {/* Secondary Link */}
       <Link

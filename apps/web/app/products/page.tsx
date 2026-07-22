@@ -5,6 +5,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Filter, Loader2, CheckCircle2 } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
@@ -149,6 +150,7 @@ export default function ProductsPage() {
   );
 
   useEffect(() => {
+    
     const element = loadMoreRef.current;
     if (!element) return;
 
@@ -177,12 +179,12 @@ export default function ProductsPage() {
 
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-3xl md:text-5xl font-bold text-[#0A0A0A] mb-3">
+          <h1 className="text-2xl md:text-4xl font-bold text-[#0A0A0A] mb-3">
             Vitamins & Daily Essentials
           </h1>
-          <p className="text-sm md:text-base text-[#6B665D] max-w-3xl leading-relaxed">
+          {/* <p className="text-sm md:text-base text-[#6B665D] max-w-3xl leading-relaxed">
             Elevate your daily ritual with our science-backed formulations. From organic extracts to clinical-grade essentials, we curate only the purest ingredients to support your lifelong vitality.
-          </p>
+          </p> */}
         </div>
 
         {/* Main Content */}

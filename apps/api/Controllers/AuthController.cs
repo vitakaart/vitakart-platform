@@ -86,6 +86,25 @@ public class AuthController : ControllerBase
         return Ok(user);
     }
 
+
+    // PUT: api/auth/profile
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<ProfileUpdatedDto>> UpdateProfile(UpdateProfileDto dto)
+    {
+        var userIdClaim = User.FindFirst("sub")?.Value
+                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim))
+        {
+            return Unauthorized(new { message = "Invalid token" });
+        }
+
+        var userId = Guid.Parse(userIdClaim);
+        var result = await _authService.UpdateProfileAsync(userId, dto);
+        return Ok(result);
+    }
+
     // POST: api/auth/change-role — WRITE rate limit
     [EnableRateLimiting(RateLimitPolicies.Write)]
     [Authorize]

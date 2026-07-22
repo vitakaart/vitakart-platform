@@ -20,7 +20,10 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IUserRepository? _users;
     private IRefreshTokenRepository? _refreshTokens;
     private ITenantRepository? _tenants;
-    private IOrderRepository? _orders;  // ← NEW
+    private IOrderRepository? _orders;  
+    private IAddressRepository? _addresses;
+    private IWishlistRepository? _wishlists;
+
 
     public UnitOfWork(AppDbContext context, ITenantContext tenantContext)
     {
@@ -50,6 +53,13 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     // ← NEW: Order repository
     public IOrderRepository Orders =>
         _orders ??= new OrderRepository(_context, _tenantContext);
+
+        public IAddressRepository Addresses =>
+    _addresses ??= new AddressRepository(_context, _tenantContext);
+
+    public IWishlistRepository Wishlists =>
+    _wishlists ??= new WishlistRepository(_context, _tenantContext);
+
 
     public async Task<int> SaveChangesAsync()
     {

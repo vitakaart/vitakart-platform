@@ -1,132 +1,228 @@
-// File: apps/web/components/auth/auth-layout.tsx
-// Beautiful split-screen auth layout — branding on left, form on right
+// apps/web/components/auth/auth-layout.tsx
+"use client";
 
+import type { ReactNode } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Heart, Shield, Sparkles, Truck } from "lucide-react";
+import Image from "next/image";
+import {  Sparkles } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
+import { AuthModeSwitch } from "@/components/auth/auth-mode-switch";
+import { AuthStepIndicator } from "@/components/auth/auth-step-indicator";
+import { OnboardingFlow } from "@/components/auth/onboarding/onboarding-flow";
 
 interface AuthLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title: string;
   subtitle?: string;
+  mode: "login" | "register";
+  currentStep?: number;
+  totalSteps?: number;
 }
 
-const FEATURES = [
+const HERO_SLIDES = [
   {
-    icon: Shield,
-    title: "100% Authentic",
-    description: "Verified products from trusted brands",
+    image: "/images/onboarding/welcome-fitness.png",
+    heading: "Live Your",
+    accent: "Healthiest Life",
+    description:
+      "Track your fitness journey with premium wellness products.",
   },
   {
-    icon: Truck,
-    title: "Free Delivery",
-    description: "On orders above ₹499",
-  },
-  {
-    icon: Sparkles,
-    title: "Best Prices",
-    description: "Exclusive member discounts",
+    image: "/images/onboarding/welcome-nutrition.png",
+    heading: "Nutrition Made",
+    accent: "Simple & Fresh",
+    description:
+      "Discover authentic wellness products, curated for your goals.",
   },
 ];
 
-export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+export function AuthLayout({
+  children,
+  title,
+  subtitle,
+  mode,
+  currentStep,
+  totalSteps = 2,
+}: AuthLayoutProps) {
+  const step = currentStep ?? (mode === "login" ? 1 : 2);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentHero = HERO_SLIDES[heroIndex];
+
+  const mobileFormContent = (
+    <>
+      <AuthModeSwitch mode={mode} />
+
+      <div className="mb-5 mt-5">
+        <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+        {subtitle && (
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {children}
+    </>
+  );
+
   return (
-    <div className="min-h-screen flex">
-      {/* ==========================================
-           LEFT SIDE — Branding (Desktop only)
-           ========================================== */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute top-0 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-accent-400/20 rounded-full blur-3xl" />
+    <>
+      {/* ═══════════════════════════════════════════
+          MOBILE (< lg)
+      ═══════════════════════════════════════════ */}
+      <div className="lg:hidden">
+        <OnboardingFlow mode={mode}>{mobileFormContent}</OnboardingFlow>
+      </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full text-white">
-          {/* Logo */}
-          <Link href={ROUTES.HOME} className="flex items-center gap-3 w-fit">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
-              <Heart className="w-7 h-7 text-primary-600 fill-primary-600" />
-            </div>
-            <span className="text-3xl font-bold">Vitakart</span>
-          </Link>
+      {/* ═══════════════════════════════════════════
+          DESKTOP (≥ lg) — Fixed height, no scroll
+      ═══════════════════════════════════════════ */}
+      <div className="hidden h-screen lg:flex">
+        {/* ══════════════════════════
+            LEFT — Full BG image
+        ══════════════════════════ */}
+        <aside className="relative h-screen w-[52%] overflow-hidden xl:w-[55%]">
+          {/* Background image */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={heroIndex}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="absolute inset-0"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${currentHero.image})` }}
+              />
+            </motion.div>
+          </AnimatePresence>
 
-          {/* Middle content */}
-          <div className="my-12">
-            <h1 className="text-4xl xl:text-5xl font-bold mb-4 leading-tight">
-              Your Health,
-              <br />
-              Our Priority
-            </h1>
-            <p className="text-lg text-primary-50 max-w-md">
-              Join thousands of health enthusiasts who trust Vitakart for
-              premium wellness products.
-            </p>
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-emerald-900/10" />
+          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-white/95 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/70 to-transparent" />
+
+          {/* Content overlay */}
+          <div className="relative z-10 flex h-full flex-col justify-between p-8 xl:p-10">
+            {/* Top — Logo */}
+            <Link href={ROUTES.HOME} className="flex w-fit items-center gap-2.5">
+              <Image src="/logos/vitakart-transparent.png" alt="" width={100} height={100} />
+
+            </Link>
+        
+
+        {/* Bottom — Compact text overlay */}
+        <div className="max-w-md">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`text-${heroIndex}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-md">
+                <Sparkles className="h-3 w-3" />
+                Premium Wellness
+              </span>
+
+              <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 xl:text-[2.75rem]">
+                {currentHero.heading}
+                <br />
+                <span className="text-emerald-600">
+                  {currentHero.accent}
+                </span>
+              </h1>
+
+              <p className="mt-3 text-sm leading-relaxed text-slate-700 xl:text-base">
+                {currentHero.description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Dots */}
+          <div className="mt-5 flex items-center gap-2">
+            {HERO_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setHeroIndex(i)}
+                className={`h-1.5 rounded-full transition-all duration-500 ${i === heroIndex
+                    ? "w-7 bg-emerald-500"
+                    : "w-1.5 bg-slate-400/60 hover:bg-slate-500"
+                  }`}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
           </div>
+        </div>
+      </div>
+    </aside >
 
-          {/* Features */}
-          <div className="space-y-4">
-            {FEATURES.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <div key={feature.title} className="flex items-start gap-4">
-                  <div className="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5" />
-                  </div>
+    {/* ══════════════════════════
+            RIGHT — Form (scrollable if needed)
+        ══════════════════════════ */}
+      < main className = "relative flex h-screen flex-1 items-center justify-center overflow-hidden bg-white px-6 py-6 xl:px-10" >
+        {/* Subtle grid */ }
+        < div className = "absolute inset-0 [background-image:linear-gradient(rgba(148,163,184,0.05)_1px,transparent_1px),linear-gradient(to_right,rgba(148,163,184,0.05)_1px,transparent_1px)] [background-size:40px_40px]" />
+
+          <div className="relative z-10 flex h-full w-full max-w-[26rem] items-center">
+            <div className="max-h-full w-full">
+              {/* Form card — scrollable inside */}
+              <div className="max-h-[calc(100vh-3rem)] overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] xl:p-8 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200">
+                {/* Top: eyebrow + step */}
+                <div className="mb-5 flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="font-semibold text-white">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm text-primary-100">
-                      {feature.description}
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                      {mode === "login" ? "Welcome back" : "Get started"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {mode === "login"
+                        ? "Sign in securely to continue"
+                        : "Set up in 60 seconds"}
                     </p>
                   </div>
+                  <AuthStepIndicator current={step} total={totalSteps} />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
-      {/* ==========================================
-           RIGHT SIDE — Auth Form
-           ========================================== */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile header */}
-        <div className="lg:hidden p-4 border-b border-gray-100">
-          <Link href={ROUTES.HOME} className="flex items-center gap-2 w-fit">
-            <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white fill-white" />
+                {/* Mode switch */}
+                <AuthModeSwitch mode={mode} />
+
+                {/* Title */}
+                <div className="mb-5 mt-5">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 xl:text-[1.75rem]">
+                    {title}
+                  </h2>
+                  {subtitle && (
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+
+                {/* Form */}
+                {children}
+              </div>
+
+              {/* Footer */}
+              <p className="mt-3 text-center text-[11px] text-slate-400">
+                © {new Date().getFullYear()} Vitakart · Trusted wellness shopping
+              </p>
             </div>
-            <span className="text-xl font-bold text-gray-900">Vitakart</span>
-          </Link>
-        </div>
-
-        {/* Form container */}
-        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* Title */}
-            <div className="mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                {title}
-              </h2>
-              {subtitle && (
-                <p className="text-gray-600 text-sm sm:text-base">
-                  {subtitle}
-                </p>
-              )}
-            </div>
-
-            {/* Form content */}
-            {children}
           </div>
-        </div>
-
-        {/* Mobile footer */}
-        <div className="lg:hidden p-4 text-center text-xs text-gray-500 border-t border-gray-100">
-          © {new Date().getFullYear()} Vitakart. All rights reserved.
-        </div>
-      </div>
-    </div>
+        </main >
+      </div >
+    </>
   );
 }

@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/constants/routes";
 import { useCart } from "@/lib/hooks/use-cart";
+import { useWishlistCount } from "@/lib/hooks/use-wishlist";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useAuthStore, useIsHydrated } from "@/lib/stores/auth-store";
 import { MegaMenu } from "./mega-menu";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function DesktopNav() {
   const router = useRouter();
@@ -24,6 +26,8 @@ export function DesktopNav() {
   const { itemCount: cartItemCount } = useCart();
   const openCartDrawer = useCartStore((state) => state.open);
 
+  const { data: wishlistData } = useWishlistCount();
+  const wishlistCount = wishlistData?.count ?? 0;
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -35,14 +39,14 @@ export function DesktopNav() {
   return (
     <div className="hidden md:flex flex-col">
       {/* Top Row: Logo + Search + Actions */}
-      <div className="flex items-center justify-between h-20 gap-4">
+      <div className="flex items-center justify-between h-18 gap-4">
         {/* Left: Logo + Catalog */}
         <div className="flex items-center gap-6 flex-shrink-0">
           <Link href={ROUTES.HOME} className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-primary-500/20">
-              <Heart className="w-6 h-6 text-white fill-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 tracking-tight">Vitakart</span>
+            {/* <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-primary-500/20"> */}
+             <Image src="/logos/vitakart-animated-logo (1).gif" alt="" width={100} height={100} />
+            {/* </div> */}
+           
           </Link>
 
           {/* Catalog Button with Mega Menu */}
@@ -61,7 +65,7 @@ export function DesktopNav() {
               className="w-full pl-12 pr-4 h-12 bg-gray-50 border-gray-200 focus:bg-white focus:border-primary-400 focus:ring-4 focus:ring-primary-500/10 rounded-xl transition-all"
             />
             {/* Optional: Search button inside input on right */}
-            <button 
+            <button
               type="submit"
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary-500 text-white opacity-0 group-focus-within:opacity-100 hover:bg-primary-600 transition-all"
             >
@@ -78,6 +82,11 @@ export function DesktopNav() {
             aria-label="Wishlist"
           >
             <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                {wishlistCount > 9 ? "9+" : wishlistCount}
+              </span>
+            )}
           </Link>
 
           <button

@@ -43,7 +43,7 @@ export function CartItem({ item, compact = false }: CartItemProps) {
 
   return (
     <div
-      className={`group flex gap-4 ${compact ? "p-3" : "p-4"} bg-[#FFFDF8] border border-[#E9E1D2] rounded-2xl transition-all duration-300 hover:shadow-md hover:border-primary-200 ${isRemovingAnim ? "opacity-0 scale-95 translate-x-4" : "opacity-100 scale-100 translate-x-0"
+      className={`group flex gap-4 ${compact ? "p-2" : "p-2"} bg-[#FFFDF8] border border-[#E9E1D2] rounded-2xl transition-all duration-300 hover:shadow-md hover:border-primary-200 ${isRemovingAnim ? "opacity-0 scale-95 translate-x-4" : "opacity-100 scale-100 translate-x-0"
         }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -93,22 +93,16 @@ export function CartItem({ item, compact = false }: CartItemProps) {
               {item.productName}
             </Link>
 
-            {/* Variant Info */}
-            {item.variantName && (
-              <p className="text-[11px] text-[#6B665D] mt-0.5">
-                {item.variantName}
-              </p>
-            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
-            <button
+            {/* <button
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-[#6B665D] hover:text-red-500 transition-all duration-200"
               aria-label="Save for later"
             >
               <Heart className="w-4 h-4" />
-            </button>
+            </button> */}
 
             <button
               onClick={handleRemove}
@@ -126,7 +120,7 @@ export function CartItem({ item, compact = false }: CartItemProps) {
           {/* Price Stack */}
           <div>
             <div className="flex items-baseline gap-2">
-              <span className={`${compact ? "text-base" : "text-lg"} font-black text-[#0A0A0A]`}>
+              <span className={`${compact ? "text-base" : "text-lg"} text-base font-bold text-red-600 leading-tight`}>
                 ₹{item.totalPrice.toLocaleString("en-IN")}
               </span>
               {item.discountPrice && (
@@ -135,9 +129,9 @@ export function CartItem({ item, compact = false }: CartItemProps) {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-[#6B665D] mt-0.5">
+            {/* <p className="text-[10px] text-[#6B665D] mt-0.5">
               ₹{item.unitPrice.toLocaleString("en-IN")} / unit
-            </p>
+            </p> */}
           </div>
 
           {/* Quantity Controls */}
@@ -161,7 +155,7 @@ export function CartItem({ item, compact = false }: CartItemProps) {
             <button
               onClick={handleIncrease}
               disabled={isUpdating || item.quantity >= item.availableStock || item.quantity >= 99}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-50 active:bg-primary-100 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all duration-200"
+              className="w-5 h-55flex items-center justify-center rounded-full hover:bg-primary-50 active:bg-primary-100 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all duration-200"
             >
               <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
             </button>

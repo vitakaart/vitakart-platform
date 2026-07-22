@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
+import Image from "next/image";
 
 // ─── Trust Badge Data ────────────────────────────────────────────────
 const trustBadges = [
@@ -193,22 +194,21 @@ export function Footer() {
       {/* ─── Main Footer Content ──────────────────────────── */}
       <div className="container-app py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
-          
+
           {/* Brand Column */}
           <div className="lg:col-span-4">
             <Link href={ROUTES.HOME} className="flex items-center gap-2.5 mb-5 group">
-              <div className="w-11 h-11 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
-                <Heart className="w-6 h-6 text-white fill-white" />
-              </div>
+
               <div>
-                <span className="text-2xl font-bold text-white tracking-tight">Vitakart</span>
-                <span className="block text-[10px] text-primary-400 font-medium tracking-[0.2em] uppercase -mt-0.5">Health & Wellness</span>
+                <Image src="/logos/vitakart-transparent.png" alt="" width={100} height={100} />
+
+                {/* <span className="block text-[10px] text-primary-400 font-medium tracking-[0.2em] uppercase -mt-0.5">Health & Wellness</span> */}
               </div>
             </Link>
             <p className="text-sm text-gray-400 mb-6 leading-relaxed max-w-xs">
               Your trusted source for premium health & wellness products. We believe in quality, transparency, and your wellbeing.
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
               <a

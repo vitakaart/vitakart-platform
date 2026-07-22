@@ -10,6 +10,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCart } from "@/lib/hooks/use-cart";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface MobileHeaderProps {
   isMenuOpen: boolean;
@@ -63,16 +64,12 @@ export function MobileHeader({
           </AnimatePresence>
         </motion.button>
 
-        <Link 
-          href={ROUTES.HOME} 
+        <Link
+          href={ROUTES.HOME}
           className="flex items-center gap-2.5 group"
         >
-          <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-            <Heart className="w-5 h-5 text-white fill-white" />
-          </div>
-          <span className="text-xl font-bold text-stone-900 tracking-tight">
-            Vitakart
-          </span>
+          <Image src="/logos/vitakart-transparent.png" alt="" width={100} height={100} />
+
         </Link>
       </div>
 
@@ -82,7 +79,7 @@ export function MobileHeader({
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={onSearchOpen}
-          className="p-2.5 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+          className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors"
           aria-label="Search"
         >
           <Search className="w-5 h-5" strokeWidth={2} />
@@ -91,7 +88,7 @@ export function MobileHeader({
         {/* Cart with Actual Badge */}
         <Link
           href={ROUTES.CART}
-          className="relative p-2.5 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+          className="relative p-2 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors"
           aria-label="Shopping cart"
         >
           <ShoppingCart className="w-5 h-5" strokeWidth={2} />
@@ -115,8 +112,8 @@ export function MobileHeader({
           href={isAuthenticated ? ROUTES.ACCOUNT : ROUTES.LOGIN}
           className={cn(
             "p-2.5 rounded-xl transition-colors",
-            isAuthenticated 
-              ? "text-primary-600 hover:bg-primary-50" 
+            isAuthenticated
+              ? "text-primary-600 hover:bg-primary-50"
               : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
           )}
           aria-label={isAuthenticated ? "My account" : "Login"}

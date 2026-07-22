@@ -1,11 +1,11 @@
 // File: apps/web/components/layout/bottom-nav.tsx
-// Smooth mobile bottom navigation — no blink on route change
+// Smooth mobile bottom navigation with wishlist badge
 
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import { 
   Grid3x3, 
   Heart, 
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { useCart } from "@/lib/hooks/use-cart";
+import { useWishlistCount } from "@/lib/hooks/use-wishlist";  // ← ADD
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -29,15 +30,15 @@ const NAV_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
   const { itemCount: cartCount } = useCart();
+  const { data: wishlistData } = useWishlistCount();  // ← ADD
+  const wishlistCount = wishlistData?.count ?? 0;      // ← ADD
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
-  // Prevent hydration mismatch and initial animation
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Don't render until mounted to prevent flash
   if (!mounted) {
     return <div className="h-20 md:hidden" />;
   }
@@ -70,10 +71,10 @@ export function BottomNav() {
                   "relative flex flex-col items-center justify-center",
                   isCenter ? "-mt-6" : "w-16 h-full"
                 )}
-                prefetch={false} // Prevents prefetch flash
+                prefetch={false}
               >
                 {isCenter ? (
-                  // Center Cart Button — static, no layoutId
+                  // Center Cart Button
                   <div
                     className={cn(
                       "relative flex items-center justify-center",
@@ -87,7 +88,6 @@ export function BottomNav() {
                   >
                     <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                     
-                    {/* Cart Badge — only animate on count change, not route */}
                     {cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-[10px] font-bold min-w-[20px] h-5 rounded-full flex items-center justify-center px-1 border-2 border-white shadow-sm">
                         {cartCount > 9 ? "9+" : cartCount}
@@ -95,9 +95,8 @@ export function BottomNav() {
                     )}
                   </div>
                 ) : (
-                  // Regular Items — smooth color transition only
+                  // Regular Items
                   <div className="relative flex flex-col items-center gap-1">
-                    {/* Active Background Pill — CSS only, no layoutId */}
                     <div
                       className={cn(
                         "absolute -top-2 w-12 h-12 rounded-2xl bg-primary-50 -z-10",
@@ -108,7 +107,7 @@ export function BottomNav() {
                     
                     <div
                       className={cn(
-                        "transition-all duration-300",
+                        "relative transition-all duration-300",
                         isActive ? "scale-110 -translate-y-0.5" : "scale-100"
                       )}
                     >
@@ -119,6 +118,13 @@ export function BottomNav() {
                         )}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
+                      
+                      {/* ✅ Wishlist Badge */}
+                      {item.href === ROUTES.WISHLIST && wishlistCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 border border-white shadow-sm">
+                          {wishlistCount > 9 ? "9+" : wishlistCount}
+                        </span>
+                      )}
                     </div>
                     
                     <span

@@ -2,7 +2,7 @@
 // Full cart page
 
 "use client";
-
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
@@ -10,23 +10,29 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { CartItem } from "@/components/cart/cart-item";
+import { ClearCartModal } from "@/components/cart/clear-cart-modal";
+
 import { OrderSummary } from "@/components/cart/order-summary";
 import { EmptyCart } from "@/components/cart/empty-cart";
 import { useCart } from "@/lib/hooks/use-cart";
 import { ROUTES } from "@/lib/constants/routes";
+import { Button } from "@/components/ui/button";
 
 function CartContent() {
   const router = useRouter();
   const { cart, isEmpty, isLoading, clearCart, isClearing } = useCart();
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const handleCheckout = () => {
     router.push(ROUTES.CHECKOUT);
   };
 
   const handleClearCart = () => {
-    if (confirm("Are you sure you want to clear your cart?")) {
-      clearCart();
-    }
+    clearCart(undefined, {
+      onSuccess: () => {
+        setShowClearModal(false);  // ← Close modal only after success
+      },
+    });
   };
 
   return (
@@ -54,14 +60,14 @@ function CartContent() {
           </div>
 
           {!isEmpty && (
-            <button
-              onClick={handleClearCart}
-              disabled={isClearing}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold transition-all disabled:opacity-50"
+            <Button
+              onClick={() => setShowClearModal(true)}
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
             >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden md:inline">Clear Cart</span>
-            </button>
+              <Trash2 className="w-4 h-4 " />
+              Clear All
+            </Button>
           )}
         </div>
 
@@ -101,6 +107,16 @@ function CartContent() {
           </div>
         )}
       </div>
+
+      {/* Clear Cart Confirmation */}
+      <ClearCartModal
+        isOpen={showClearModal}
+        itemCount={cart?.totalItems ?? 0}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleClearCart}  // ← Just call it
+        isClearing={isClearing}
+      />
+
     </MainLayout>
   );
 }

@@ -28,6 +28,16 @@ export const authApi = {
     return response.data;
   },
 
+  // Update profile (name, phone)
+  updateProfile: async (
+    data: UpdateProfileInput,
+  ): Promise<ProfileUpdatedResponse> => {
+    const response = await apiClient.put<ProfileUpdatedResponse>(
+      "/auth/profile",
+      data,
+    );
+    return response.data;
+  },
   // Logout (revoke refresh token)
   logout: async (refreshToken: string): Promise<void> => {
     await apiClient.post("/auth/logout", { refreshToken });

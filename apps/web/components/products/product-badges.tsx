@@ -35,7 +35,7 @@ export function ProductBadges({ product, className }: ProductBadgesProps) {
   if (badges.length === 0) return null;
 
   return (
-    <div className={cn("flex flex-wrap gap-1", className)}>
+    <div className={cn("flex flex-col gap-1", className)}>
       {badges.slice(0, 2).map((badge, i) => (
         <span
           key={i}

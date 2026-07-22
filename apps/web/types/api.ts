@@ -34,6 +34,7 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
+  phone?: string | null;  // ← ADD this
   role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
   isVerified: boolean;
 }
@@ -314,4 +315,127 @@ export interface CreateOrderInput {
 // Cancel order input
 export interface CancelOrderInput {
   reason?: string;
+}
+
+
+// ==========================================
+// UPDATE PROFILE TYPES
+// ==========================================
+
+
+// Update profile DTO
+export interface UpdateProfileInput {
+  fullName: string;
+  phone?: string;
+}
+
+// Profile updated response
+export interface ProfileUpdatedResponse {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
+  isVerified: boolean;
+}
+
+
+
+// ==========================================
+// ADDRESS TYPES
+// ==========================================
+
+export enum AddressType {
+  Home = "Home",
+  Office = "Office",
+  Other = "Other",
+}
+
+// Address (from API)
+export interface Address {
+  id: string;
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  landmark: string | null;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+  type: AddressType;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Create address input
+export interface CreateAddressInput {
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  landmark?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country?: string;
+  type: AddressType;
+  isDefault?: boolean;
+}
+
+// Update address input
+export interface UpdateAddressInput {
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  landmark?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country?: string;
+  type: AddressType;
+}
+
+
+// ==========================================
+// WISHLIST TYPES
+// ==========================================
+
+// Wishlist item (from API)
+export interface WishlistItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  productImage: string | null;
+  brand: string | null;
+  categoryName: string;
+  categorySlug: string;
+  price: number;
+  discountPrice: number | null;
+  finalPrice: number;
+  discountPercentage: number | null;
+  stockQuantity: number;
+  inStock: boolean;
+  isActive: boolean;
+  addedAt: string;
+}
+
+// Toggle response
+export interface WishlistToggleResponse {
+  isInWishlist: boolean;
+  message: string;
+  wishlistCount: number;
+}
+
+// Count response
+export interface WishlistCountResponse {
+  count: number;
+}
+
+// Add/Toggle input
+export interface WishlistActionInput {
+  productId: string;
 }

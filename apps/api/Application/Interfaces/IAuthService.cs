@@ -22,4 +22,7 @@ public interface IAuthService
     
     // Change user role (permission checks inside)
     Task<UserInfoDto> ChangeUserRoleAsync(Guid currentUserId, UserRole currentUserRole, ChangeRoleDto dto);
+
+    
+Task<ProfileUpdatedDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
 }

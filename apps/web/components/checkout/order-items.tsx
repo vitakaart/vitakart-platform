@@ -54,7 +54,7 @@ export function OrderItems({ cart }: Props) {
 
                 {/* Discount Badge */}
                 {discountPercent > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold px-1 py-0.5 rounded flex items-center gap-0.5">
+                  <div className="absolute top-0.7 left-.7 bg-red-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
                     <TrendingDown className="w-2 h-2" />
                     {discountPercent}%
                   </div>
@@ -86,8 +86,8 @@ export function OrderItems({ cart }: Props) {
                       @ ₹{item.unitPrice.toLocaleString("en-IN")}
                     </span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-black text-[#0A0A0A]">
+                  <div className="text-right flex flex-row gap-2 items-end">
+                    <span className="text-sm font-bold text-red-600 leading-tight">
                       ₹{item.totalPrice.toLocaleString("en-IN")}
                     </span>
                     {item.discountPrice && (

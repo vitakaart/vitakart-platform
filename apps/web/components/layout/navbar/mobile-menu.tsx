@@ -30,6 +30,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import { useAuthStore, useIsHydrated } from "@/lib/stores/auth-store";
 import { cn } from "@/lib/utils";
 import { MEGA_MENU_DATA } from "@/lib/data/mega-menu";
+import Image from "next/image";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -103,10 +104,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <div className="flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
           <div className="flex items-center justify-between mb-4">
             <Link href={ROUTES.HOME} onClick={onClose} className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                <Heart className="w-6 h-6 text-white fill-white" />
-              </div>
-              <span className="text-xl font-bold">Vitakart</span>
+              <Image src="/logos/vitakart-transparent.png" alt="" width={100} height={100} />
+
             </Link>
             <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/20 transition-colors">
               <X className="w-6 h-6" />

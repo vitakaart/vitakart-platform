@@ -20,8 +20,12 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
-    public DbSet<Order> Orders { get; set; }              // ← NEW
-    public DbSet<OrderItem> OrderItems { get; set; }      // ← NEW
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+
+    public DbSet<Address> Addresses { get; set; }
+
+    public DbSet<Wishlist> Wishlists { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -346,6 +350,106 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
+        // ==========================================
+        // ADDRESS CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<Address>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+
+            // Contact info
+            entity.Property(a => a.FullName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(a => a.Phone)
+                .IsRequired()
+                .HasMaxLength(15);
+
+            // Address fields
+            entity.Property(a => a.AddressLine1)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(a => a.AddressLine2)
+                .HasMaxLength(200);
+
+            entity.Property(a => a.Landmark)
+                .HasMaxLength(100);
+
+            entity.Property(a => a.City)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(a => a.State)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(a => a.Pincode)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.Property(a => a.Country)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            // Enum as string
+            entity.Property(a => a.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .IsRequired();
+
+            // Indexes for fast queries
+            entity.HasIndex(a => new { a.TenantId, a.UserId });
+            entity.HasIndex(a => new { a.UserId, a.IsDefault });
+
+            // Relations
+            entity.HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(a => a.Tenant)
+                .WithMany()
+                .HasForeignKey(a => a.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        // ==========================================
+        // WISHLIST CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<Wishlist>(entity =>
+        {
+            entity.HasKey(w => w.Id);
+
+            // Prevent duplicates — one product per user in wishlist
+            entity.HasIndex(w => new { w.UserId, w.ProductId })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+
+            // Indexes for fast queries
+            entity.HasIndex(w => new { w.TenantId, w.UserId });
+            entity.HasIndex(w => w.ProductId);
+
+            // Relations
+            entity.HasOne(w => w.User)
+                .WithMany()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.Product)
+                .WithMany()
+                .HasForeignKey(w => w.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.Tenant)
+                .WithMany()
+                .HasForeignKey(w => w.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -23,8 +23,8 @@ export default function HomePage() {
       <main className="mx-auto flex container-app flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
         <HeroSlider />
         <CategoryGrid />
-        <FeaturedProducts />
-        <DealBanner />
+        {/* <FeaturedProducts /> */}
+        {/* <DealBanner /> */}
         <BestSellers />
         <SecureDelivery />
         <VitaminsSection />
@@ -32,11 +32,11 @@ export default function HomePage() {
         <DiscountCode />
         <TrustBadges />
         <BrandStory />
-        <PartnerBrands />
-        <Testimonials />
+        {/* <PartnerBrands /> */}
+        {/* <Testimonials /> */}
         <InstagramGrid />
         <NewsletterCTA />
-        <CategoryGrid />
+        {/* <CategoryGrid /> */}
       </main>
     </MainLayout>
   );

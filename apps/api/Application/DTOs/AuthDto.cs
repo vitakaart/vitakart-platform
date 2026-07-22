@@ -57,3 +57,22 @@ public class ChangeRoleDto
     public Guid UserId { get; set; }
     public UserRole NewRole { get; set; }
 }
+
+
+// User sends this to update profile
+public class UpdateProfileDto
+{
+    public string FullName { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+}
+
+// API returns this after profile update
+public class ProfileUpdatedDto
+{
+    public Guid Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public string Role { get; set; } = string.Empty;
+    public bool IsVerified { get; set; }
+}

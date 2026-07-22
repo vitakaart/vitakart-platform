@@ -91,8 +91,8 @@ export function VitaminsSection() {
         {!error && (isLoading || products.length > 0) && (
           <div className="grid grid-cols-2 gap-3">
             {isLoading
-              ? Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
-              : products.slice(0, 4).map((product, i) => (
+              ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
+              : products.slice(0, 6).map((product, i) => (
                   <ProductCardCompact key={product.id} product={product} index={i} />
                 ))}
           </div>

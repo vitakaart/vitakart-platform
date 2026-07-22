@@ -1,9 +1,8 @@
 // File: apps/web/components/products/filter-sidebar.tsx
-// Filters sidebar (desktop + drawer content for mobile)
+// Multi-select checkboxes with proper "All Categories" logic
 
 "use client";
 
-import { useState } from "react";
 import { Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types/api";
@@ -25,7 +24,14 @@ interface FilterSidebarProps {
   isMobile?: boolean;
 }
 
-const HEALTH_GOALS = ["Immunity", "Energy", "Sleep", "Digestion", "Recovery", "Focus"];
+const HEALTH_GOALS = [
+  "Immunity",
+  "Energy",
+  "Sleep",
+  "Digestion",
+  "Recovery",
+  "Focus",
+];
 
 export function FilterSidebar({
   categories,
@@ -73,8 +79,16 @@ export function FilterSidebar({
     filters.minPrice > 0 ||
     filters.maxPrice < 5000;
 
+  // "All Categories" is checked ONLY when no categories selected
+  const isAllCategoriesChecked = filters.categories.length === 0;
+
   return (
-    <div className={cn("bg-[#FFFDF8]", !isMobile && "rounded-2xl border border-[#E9E1D2] p-5")}>
+    <div
+      className={cn(
+        "bg-[#FFFDF8]",
+        !isMobile && "rounded-2xl border border-[#E9E1D2] p-5"
+      )}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -85,7 +99,10 @@ export function FilterSidebar({
         </div>
 
         {isMobile && onClose && (
-          <button onClick={onClose} className="p-1 hover:bg-[#F5F1E8] rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-[#F5F1E8] rounded-lg"
+          >
             <X className="w-5 h-5" />
           </button>
         )}
@@ -101,22 +118,35 @@ export function FilterSidebar({
         </button>
       )}
 
-      {/* Categories */}
+      {/* Categories (Multi-select checkboxes) */}
       <FilterSection title="Categories">
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+          {/* All Categories — clears all selections */}
           <CheckboxItem
             label="All Categories"
-            checked={filters.categories.length === 0}
-            onChange={() => onFiltersChange({ ...filters, categories: [] })}
+            checked={isAllCategoriesChecked}
+            onChange={() => {
+              // If already checked, do nothing; else clear all categories
+              if (!isAllCategoriesChecked) {
+                onFiltersChange({ ...filters, categories: [] });
+              }
+            }}
+            highlight={isAllCategoriesChecked}
           />
-          {categories.map((cat) => (
-            <CheckboxItem
-              key={cat.id}
-              label={cat.name}
-              checked={filters.categories.includes(cat.slug)}
-              onChange={() => toggleCategory(cat.slug)}
-            />
-          ))}
+
+          {/* Individual categories — multi-select */}
+          {categories.map((cat) => {
+            const isChecked = filters.categories.includes(cat.slug);
+            return (
+              <CheckboxItem
+                key={cat.id}
+                label={cat.name}
+                checked={isChecked}
+                onChange={() => toggleCategory(cat.slug)}
+                highlight={isChecked}
+              />
+            );
+          })}
         </div>
       </FilterSection>
 
@@ -161,15 +191,19 @@ export function FilterSidebar({
       {/* Brands */}
       {brands.length > 0 && (
         <FilterSection title="Brand" isLast>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {brands.slice(0, 10).map((brand) => (
-              <CheckboxItem
-                key={brand}
-                label={brand}
-                checked={filters.brands.includes(brand)}
-                onChange={() => toggleBrand(brand)}
-              />
-            ))}
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {brands.slice(0, 10).map((brand) => {
+              const isChecked = filters.brands.includes(brand);
+              return (
+                <CheckboxItem
+                  key={brand}
+                  label={brand}
+                  checked={isChecked}
+                  onChange={() => toggleBrand(brand)}
+                  highlight={isChecked}
+                />
+              );
+            })}
           </div>
         </FilterSection>
       )}
@@ -177,7 +211,9 @@ export function FilterSidebar({
   );
 }
 
-// Section wrapper
+// ==========================================
+// SECTION WRAPPER
+// ==========================================
 function FilterSection({
   title,
   children,
@@ -195,25 +231,36 @@ function FilterSection({
   );
 }
 
-// Checkbox item
+// ==========================================
+// CHECKBOX ITEM (with highlight support)
+// ==========================================
 function CheckboxItem({
   label,
   checked,
   onChange,
+  highlight = false,
 }: {
   label: string;
   checked: boolean;
   onChange: () => void;
+  highlight?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer group">
+    <label className="flex items-center gap-2 cursor-pointer group py-0.5">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="w-4 h-4 rounded border-[#E9E1D2] text-[#10B981] focus:ring-[#10B981] cursor-pointer"
+        className="w-4 h-4 rounded border-[#E9E1D2] text-[#10B981] focus:ring-[#10B981] focus:ring-offset-0 cursor-pointer accent-[#10B981]"
       />
-      <span className="text-sm text-[#0A0A0A] group-hover:text-[#10B981] transition-colors">
+      <span
+        className={cn(
+          "text-sm transition-colors",
+          highlight
+            ? "text-[#10B981] font-semibold"
+            : "text-[#0A0A0A] group-hover:text-[#10B981]"
+        )}
+      >
         {label}
       </span>
     </label>

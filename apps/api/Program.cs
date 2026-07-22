@@ -110,6 +110,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 
 // ============================================
 // FLUENT VALIDATION

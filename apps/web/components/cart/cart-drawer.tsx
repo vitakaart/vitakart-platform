@@ -97,7 +97,7 @@ export function CartDrawer() {
             )}
 
             {/* Actions */}
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-row gap-2">
               <Link
                 href={ROUTES.CART}
                 onClick={close}

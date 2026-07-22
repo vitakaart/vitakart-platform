@@ -12,7 +12,10 @@ public interface IUnitOfWork
     IRefreshTokenRepository RefreshTokens { get; }
     ITenantRepository Tenants { get; }
     ICartRepository Carts { get; }
-    IOrderRepository Orders { get; }  // ← NEW LINE
+    IOrderRepository Orders { get; }  
+    
+    IAddressRepository Addresses { get; }
+    IWishlistRepository Wishlists { get; }
 
     // Save all changes in one transaction
     Task<int> SaveChangesAsync();
@@ -21,4 +24,5 @@ public interface IUnitOfWork
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackTransactionAsync();
+
 }
