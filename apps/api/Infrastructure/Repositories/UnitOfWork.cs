@@ -20,9 +20,16 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IUserRepository? _users;
     private IRefreshTokenRepository? _refreshTokens;
     private ITenantRepository? _tenants;
-    private IOrderRepository? _orders;  
+    private IOrderRepository? _orders;
     private IAddressRepository? _addresses;
     private IWishlistRepository? _wishlists;
+    private IReviewRepository? _reviews;
+
+    private IPasswordResetTokenRepository? _passwordResetTokens;
+    private ICouponRepository? _coupons;
+    private ICouponUsageRepository? _couponUsages;
+
+
 
 
     public UnitOfWork(AppDbContext context, ITenantContext tenantContext)
@@ -54,12 +61,26 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IOrderRepository Orders =>
         _orders ??= new OrderRepository(_context, _tenantContext);
 
-        public IAddressRepository Addresses =>
-    _addresses ??= new AddressRepository(_context, _tenantContext);
+    public IAddressRepository Addresses =>
+_addresses ??= new AddressRepository(_context, _tenantContext);
 
     public IWishlistRepository Wishlists =>
     _wishlists ??= new WishlistRepository(_context, _tenantContext);
 
+
+    public IReviewRepository Reviews =>
+        _reviews ??= new ReviewRepository(_context, _tenantContext);
+
+
+    // Property
+    public IPasswordResetTokenRepository PasswordResetTokens =>
+        _passwordResetTokens ??= new PasswordResetTokenRepository(_context, _tenantContext);
+
+    public ICouponRepository Coupons =>
+        _coupons ??= new CouponRepository(_context, _tenantContext);
+
+    public ICouponUsageRepository CouponUsages =>
+        _couponUsages ??= new CouponUsageRepository(_context, _tenantContext);
 
     public async Task<int> SaveChangesAsync()
     {

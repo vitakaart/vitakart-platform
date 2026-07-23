@@ -90,7 +90,7 @@ export function ClearCartModal({
             </p>
 
             {/* Buttons */}
-            <div className="flex flex-col-reverse sm:flex-row gap-2">
+            <div className="flex flex-row-reverse sm:flex-row gap-2">
               <Button
                 type="button"
                 variant="outline"

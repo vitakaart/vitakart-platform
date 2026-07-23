@@ -312,6 +312,8 @@ public class ProductService : IProductService
             MetaTitle = product.MetaTitle,
             MetaDescription = product.MetaDescription,
             MetaKeywords = product.MetaKeywords,
+            AverageRating = product.AverageRating,
+            TotalReviews = product.TotalReviews,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
         };

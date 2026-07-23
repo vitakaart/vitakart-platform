@@ -1,5 +1,5 @@
 // File: apps/web/app/reset-password/page.tsx
-// Reset password page — user clicks link from email
+// Reset password page — REAL API integrated
 
 "use client";
 
@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { PasswordInput } from "@/components/auth/password-input";
+import { authApi } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/api/client";
 import { ROUTES } from "@/lib/constants/routes";
 
 const resetPasswordSchema = z
@@ -60,14 +62,20 @@ function ResetPasswordContent() {
     },
   });
 
-  // Invalid/missing token
+  // ==========================================
+  // INVALID/MISSING TOKEN
+  // ==========================================
   if (!token) {
     return (
-      <AuthLayout title="Invalid Link" subtitle="This reset link is invalid or expired">
+      <AuthLayout
+        mode="login"
+        title="Invalid Link"
+        subtitle="This reset link is invalid or expired"
+      >
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div className="w-20 h-20 bg-danger-100 rounded-full flex items-center justify-center">
-              <XCircle className="w-10 h-10 text-danger-600" />
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <XCircle className="w-10 h-10 text-red-600" />
             </div>
           </div>
 
@@ -81,10 +89,11 @@ function ResetPasswordContent() {
           </div>
 
           <div className="space-y-2">
-            <Button asChild className="w-full h-11 bg-primary-500 hover:bg-primary-600">
-              <Link href={ROUTES.FORGOT_PASSWORD}>
-                Request New Link
-              </Link>
+            <Button
+              asChild
+              className="w-full h-11 bg-primary-500 hover:bg-primary-600"
+            >
+              <Link href={ROUTES.FORGOT_PASSWORD}>Request New Link</Link>
             </Button>
             <Button asChild variant="outline" className="w-full h-11">
               <Link href={ROUTES.LOGIN}>
@@ -98,15 +107,17 @@ function ResetPasswordContent() {
     );
   }
 
+  // ==========================================
+  // SUBMIT HANDLER
+  // ==========================================
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsSubmitting(true);
 
     try {
-      // TODO: Add backend API call when ready
-      // await authApi.resetPassword({ token, password: data.password });
-
-      // Placeholder — simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await authApi.resetPassword({
+        token,
+        newPassword: data.password,
+      });
 
       setIsSuccess(true);
       toast.success("Password reset successfully!");
@@ -116,21 +127,28 @@ function ResetPasswordContent() {
         router.push(ROUTES.LOGIN);
       }, 2000);
     } catch (error) {
-      toast.error("Failed to reset password. Please try again.");
+      toast.error(getErrorMessage(error));
       console.error("Reset password error:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Success screen
+  // ==========================================
+  // SUCCESS SCREEN
+  // ==========================================
   if (isSuccess) {
     return (
-      <AuthLayout title="Password Reset!" subtitle="Your password has been updated">
+      <AuthLayout
+        mode="login"
+        title="Password Reset!"
+        subtitle="Your password has been updated"
+      >
+
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div className="w-20 h-20 bg-success-100 rounded-full flex items-center justify-center animate-scale-in">
-              <CheckCircle2 className="w-10 h-10 text-success-600" />
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center animate-scale-in">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
           </div>
 
@@ -143,7 +161,10 @@ function ResetPasswordContent() {
             </p>
           </div>
 
-          <Button asChild className="w-full h-11 bg-primary-500 hover:bg-primary-600">
+          <Button
+            asChild
+            className="w-full h-11 bg-primary-500 hover:bg-primary-600"
+          >
             <Link href={ROUTES.LOGIN}>Go to Login</Link>
           </Button>
         </div>
@@ -151,10 +172,14 @@ function ResetPasswordContent() {
     );
   }
 
+  // ==========================================
+  // FORM SCREEN
+  // ==========================================
   return (
     <AuthLayout
-      title="Create New Password"
-      subtitle="Choose a strong password for your account"
+      mode="login"
+      title="Check Your Email"
+      subtitle="We've sent password reset instructions"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Info box */}
@@ -177,7 +202,7 @@ function ResetPasswordContent() {
             htmlFor="password"
             className="text-sm font-medium text-gray-700"
           >
-            New Password <span className="text-danger-500 ml-1">*</span>
+            New Password <span className="text-red-500 ml-1">*</span>
           </label>
           <PasswordInput
             id="password"
@@ -186,7 +211,7 @@ function ResetPasswordContent() {
             {...register("password")}
           />
           {errors.password?.message && (
-            <p className="text-xs text-danger-500 mt-1 flex items-center gap-1">
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
               <span>⚠</span>
               {errors.password.message}
             </p>
@@ -199,7 +224,7 @@ function ResetPasswordContent() {
             htmlFor="confirmPassword"
             className="text-sm font-medium text-gray-700"
           >
-            Confirm New Password <span className="text-danger-500 ml-1">*</span>
+            Confirm New Password <span className="text-red-500 ml-1">*</span>
           </label>
           <PasswordInput
             id="confirmPassword"
@@ -208,7 +233,7 @@ function ResetPasswordContent() {
             {...register("confirmPassword")}
           />
           {errors.confirmPassword?.message && (
-            <p className="text-xs text-danger-500 mt-1 flex items-center gap-1">
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
               <span>⚠</span>
               {errors.confirmPassword.message}
             </p>

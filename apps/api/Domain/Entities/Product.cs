@@ -58,6 +58,11 @@ public class Product : BaseEntity, ITenantEntity
     public string? MetaDescription { get; set; }
     public string? MetaKeywords { get; set; }
 
+    // ==========================================
+    // REVIEWS & RATINGS (auto-calculated)
+    // ==========================================
+    public decimal AverageRating { get; set; } = 0;  // 0.0 to 5.0
+    public int TotalReviews { get; set; } = 0;
     // Navigation property
     public Category Category { get; set; } = null!;
 }

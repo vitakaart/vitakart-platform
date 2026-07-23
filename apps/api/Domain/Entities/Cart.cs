@@ -15,6 +15,14 @@ public class Cart : BaseEntity, ITenantEntity
 
     // Optional coupon code applied
     public string? CouponCode { get; set; }
+    // Applied coupon reference (optional)
+    public Guid? CouponId { get; set; }
+
+    // Cached discount amount (recalculated on cart change)
+    public decimal CouponDiscount { get; set; } = 0;
+
+    // Navigation
+    public Coupon? Coupon { get; set; }
 
     // Navigation properties
     public User User { get; set; } = null!;

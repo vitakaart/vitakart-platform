@@ -1,9 +1,10 @@
 // File: apps/api/Application/Services/CartService.cs
-// Fixed cart service — uses repository methods properly
+// Cart service with coupon auto-revalidation
 
 using api.Application.DTOs;
 using api.Application.Interfaces;
 using api.Domain.Entities;
+using api.Domain.Enums;
 using api.Domain.Exceptions;
 
 namespace api.Application.Services;
@@ -105,13 +106,15 @@ public class CartService : ICartService
                 Quantity = dto.Quantity,
                 UnitPrice = product.Price,
                 DiscountPrice = product.DiscountPrice,
-                // TenantId auto-set by AddCartItemAsync
             };
 
             await _unitOfWork.Carts.AddCartItemAsync(newItem);
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        // ✅ Re-validate coupon (subtotal changed)
+        await RevalidateCouponAsync(userId);
 
         // Refetch cart with all details
         var updatedCart = await _unitOfWork.Carts.GetUserCartAsync(userId);
@@ -159,6 +162,9 @@ public class CartService : ICartService
 
         await _unitOfWork.SaveChangesAsync();
 
+        // ✅ Re-validate coupon
+        await RevalidateCouponAsync(userId);
+
         // Return updated cart
         var updatedCart = await _unitOfWork.Carts.GetUserCartAsync(userId);
         return MapToDto(updatedCart!);
@@ -187,6 +193,9 @@ public class CartService : ICartService
 
         await _unitOfWork.SaveChangesAsync();
 
+        // ✅ Re-validate coupon
+        await RevalidateCouponAsync(userId);
+
         var updatedCart = await _unitOfWork.Carts.GetUserCartAsync(userId);
         return MapToDto(updatedCart!);
     }
@@ -209,8 +218,10 @@ public class CartService : ICartService
             _unitOfWork.Carts.UpdateCartItem(item);
         }
 
-        // Clear coupon
+        // ✅ Clear coupon completely
         cart.CouponCode = null;
+        cart.CouponId = null;
+        cart.CouponDiscount = 0;
         _unitOfWork.Carts.Update(cart);
 
         await _unitOfWork.SaveChangesAsync();
@@ -230,20 +241,29 @@ public class CartService : ICartService
             .ToList() ?? new List<CartItemDto>();
 
         var subtotal = items.Sum(i => i.TotalPrice);
-        var totalDiscount = items.Sum(i => i.SavedAmount);
+        var productDiscount = items.Sum(i => i.SavedAmount);
         var shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-        var total = subtotal + shippingFee;
+
+        // ✅ Coupon discount (from cart)
+        var couponDiscount = cart.CouponDiscount;
+
+        // Total = subtotal - coupon discount + shipping
+        var total = subtotal - couponDiscount + shippingFee;
+
+        // Prevent negative total
+        if (total < 0) total = 0;
 
         return new CartDto
         {
             Id = cart.Id,
             UserId = cart.UserId,
             CouponCode = cart.CouponCode,
+            CouponDiscount = couponDiscount,
             Items = items,
             TotalItems = items.Sum(i => i.Quantity),
             UniqueItemsCount = items.Count,
             Subtotal = subtotal,
-            TotalDiscount = totalDiscount,
+            TotalDiscount = productDiscount,
             ShippingFee = shippingFee,
             Total = total,
             CreatedAt = cart.CreatedAt,
@@ -270,5 +290,65 @@ public class CartService : ICartService
             AvailableStock = item.Product?.StockQuantity ?? 0,
             InStock = (item.Product?.StockQuantity ?? 0) > 0,
         };
+    }
+
+    // ==========================================
+    // AUTO REVALIDATE COUPON
+    // If coupon exists but no longer valid, remove it
+    // If still valid, recalculate discount amount
+    // ==========================================
+    private async Task RevalidateCouponAsync(Guid userId)
+    {
+        var cart = await _unitOfWork.Carts.GetUserCartAsync(userId);
+        if (cart == null || string.IsNullOrEmpty(cart.CouponCode) || !cart.CouponId.HasValue)
+        {
+            return;
+        }
+
+        var coupon = await _unitOfWork.Coupons.GetByIdAsync(cart.CouponId.Value);
+        if (coupon == null || !coupon.IsValid)
+        {
+            // Remove invalid coupon
+            cart.CouponCode = null;
+            cart.CouponId = null;
+            cart.CouponDiscount = 0;
+            _unitOfWork.Carts.Update(cart);
+            await _unitOfWork.SaveChangesAsync();
+            return;
+        }
+
+        // Recalculate subtotal
+        var subtotal = cart.Items.Where(i => !i.IsDeleted).Sum(i => i.TotalPrice);
+
+        // Check if still meets minimum
+        if (subtotal < coupon.MinOrderAmount)
+        {
+            cart.CouponCode = null;
+            cart.CouponId = null;
+            cart.CouponDiscount = 0;
+            _unitOfWork.Carts.Update(cart);
+            await _unitOfWork.SaveChangesAsync();
+            return;
+        }
+
+        // Recalculate discount amount
+        decimal discount;
+        if (coupon.Type == CouponType.Percentage)
+        {
+            discount = subtotal * (coupon.Value / 100);
+            if (coupon.MaxDiscount.HasValue && discount > coupon.MaxDiscount.Value)
+            {
+                discount = coupon.MaxDiscount.Value;
+            }
+        }
+        else
+        {
+            discount = coupon.Value;
+            if (discount > subtotal) discount = subtotal;
+        }
+
+        cart.CouponDiscount = Math.Round(discount, 2);
+        _unitOfWork.Carts.Update(cart);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

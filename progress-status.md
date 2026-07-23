@@ -1,625 +1,653 @@
-# 📅 DAY 1 — SETUP COMPLETED
+# ✅ VITAKART PLATFORM — MASTER PROGRESS & TODO
 
-## ✅ Planning & Decisions
-- [x] Business idea decided (Health & Wellness Niche)
-- [x] Target audience defined (18-40, health conscious)
-- [x] Country decided (India first, global later)
-- [x] Vendor policy decided (Single vendor first)
-- [x] Product category decided (Health & Wellness)
-- [x] Architecture decided (Multi-tenant Monorepo)
-- [x] Reusability strategy decided (White label ready)
-- [x] Tech stack finalized (Next.js + .NET + PostgreSQL)
+**"Build Once — Use Forever — Scale Anywhere"**  
+Stack: Next.js 16 + ASP.NET Core 10 + PostgreSQL  
+**Overall Progress: ~75% Complete** 🚀
 
-## ✅ System Requirements Check
-- [x] Node.js installed (v24.16.0)
-- [x] npm installed (v11.13.0)
-- [x] pnpm installed (v11.13.0)
-- [x] Git installed (v2.54.0)
-- [x] .NET SDK installed (v10.0.300)
-- [x] VS Code ready
+---
 
-## ✅ GitHub Setup
-- [x] GitHub organization created (vitakart)
-- [x] Monorepo repository created (vitakart-platform)
-- [x] Repository set to Private
-- [x] Local Git initialized
-- [x] Remote origin connected
-- [x] First commit pushed to GitHub
+# 🏆 COMPLETED DAY-BY-DAY
 
-## ✅ Monorepo Setup
-- [x] Turborepo installed
-- [x] pnpm workspaces configured
-- [x] Root package.json setup
-- [x] pnpm-workspace.yaml setup
-- [x] turbo.json setup
-- [x] .gitignore setup
-- [x] README.md setup
+## ✅ DAY 1 — SETUP COMPLETE
+- Business planning, tech stack, monorepo setup
+- Web + Admin + API apps created
+- All 3 apps running (3000, 3001, 5208)
 
-## ✅ Apps Created
-- [x] apps/web created (Next.js 16.2.10)
-- [x] apps/admin created (Next.js 16.2.10)
-- [x] apps/api created (ASP.NET Core 10)
+## ✅ DAY 2 — SHARED PACKAGES + DATABASE
+- packages/types, utils, validators
+- Neon PostgreSQL cloud setup
+- Clean Architecture structure
+- First entities + migration
+- Tenants CRUD working
 
-## ✅ Frontend Setup (Web)
-- [x] Next.js 16 with TypeScript
-- [x] Tailwind CSS 4 configured
-- [x] ESLint configured
-- [x] App Router enabled
-- [x] Turbopack enabled
-- [x] Running on port 3000
+## ✅ DAY 3 — MULTI-TENANT + JWT AUTH
+- Multi-tenant middleware (X-Tenant-Slug)
+- JWT authentication
+- Register/Login endpoints
+- Custom exception handling
 
-## ✅ Frontend Setup (Admin)
-- [x] Next.js 16 with TypeScript
-- [x] Tailwind CSS 4 configured
-- [x] ESLint configured
-- [x] App Router enabled
-- [x] Turbopack enabled
-- [x] Port changed to 3001
-- [x] Running on port 3001
+## ✅ DAY 4 — API DOCS + REFRESH TOKENS
+- Scalar UI (interactive docs)
+- Refresh token rotation (device tracking)
+- CORS configuration
 
-## ✅ Backend Setup (API)
-- [x] ASP.NET Core 10 Web API created
-- [x] Controllers-based setup
-- [x] Sample WeatherForecast controller
-- [x] Running on port 5208
+## ✅ DAY 5 — CATEGORIES + PRODUCTS
+- Nested category hierarchy
+- Product CRUD with filters + pagination
+- Search, sort, price range
 
-## ✅ Packages Created
-- [x] packages/ui (shared components)
-- [x] packages/eslint-config
-- [x] packages/typescript-config
+## ✅ DAY 6 — ROLE-BASED AUTHORIZATION
+- 4 roles (Customer/Vendor/Admin/SuperAdmin)
+- Role hierarchy
+- SuperAdmin auto-seed
+- Change role endpoint
 
-## ✅ Testing Done
-- [x] Web app tested (localhost:3000) ✅
-- [x] Admin app tested (localhost:3001) ✅
-- [x] API tested (localhost:5208/weatherforecast) ✅
-- [x] All 3 apps running parallel via pnpm dev ✅
+## ✅ DAY 7 — REPOSITORY PATTERN + VALIDATION
+- Generic Repository<T> with auto-filtering
+- UnitOfWork with transactions
+- FluentValidation (8 validators)
+- Global exception handler
 
+## ✅ DAY 8 — SECURITY HARDENING
+- Rate limiting (4 policies)
+- 7 security headers
+- Account lockout (5 attempts / 15 min)
+- HTTPS enforcement + HSTS
+- Request size limits
 
-# 📅 DAY 2 — SHARED PACKAGES + DATABASE
+---
 
-## ✅ Shared Packages Setup
-- [x] packages/types created
-- [x] packages/types → @vitakart/types configured
-- [x] packages/types → sample types added (Product, User, Category, TestType)
-- [x] packages/types → connected to web app
-- [x] packages/types → connected to admin app
-- [x] packages/utils created
-- [x] packages/utils → @vitakart/utils configured
-- [x] packages/utils → helper functions added (formatPrice, formatDate, slugify, truncate, generateId)
-- [x] packages/utils → connected to web app
-- [x] packages/utils → connected to admin app
-- [x] packages/validators created
-- [x] packages/validators → @vitakart/validators configured
-- [x] packages/validators → Zod installed
-- [x] packages/validators → validation schemas added (register, login, product, address)
-- [x] packages/validators → connected to web app
-- [x] packages/validators → connected to admin app
-- [x] All 3 packages tested successfully on web app
-- [x] Code committed and pushed to GitHub
+# 🆕 DAY 9+ — ADDITIONAL FEATURES COMPLETED
 
-## ✅ Cloud Database Setup (Neon PostgreSQL)
-- [x] Neon account created
-- [x] vitakart project created on Neon
-- [x] PostgreSQL 16 database ready
-- [x] Region selected (Singapore/AP-Southeast)
-- [x] Connection string obtained
-- [x] Password reset (security)
+## ✅ DAY 9 — CART SYSTEM
+- Cart entity + CartItem
+- Add/Update/Remove/Clear cart
+- Stock validation on add
+- Auto-recalculate totals
+- Clear cart confirmation modal (bottom sheet mobile)
 
-## ✅ Backend Database Integration
-- [x] Npgsql.EntityFrameworkCore.PostgreSQL installed
-- [x] Microsoft.EntityFrameworkCore.Design installed
-- [x] dotnet-ef global tool installed
-- [x] DotNetEnv package installed
-- [x] .env file created (safe, gitignored)
-- [x] Connection string secured in .env
-- [x] Program.cs configured to load .env
+## ✅ DAY 10 — ORDERS SYSTEM
+- Order + OrderItem entities (with snapshot pattern)
+- Order creation with idempotency
+- Order number generation (ORD-2025-000001)
+- Auto stock deduction
+- Order status timeline
+- Order cancellation (with stock restore)
+- Paginated orders list (with date + status filters)
+- Order detail page (desktop full page + mobile bottom sheet)
 
-## ✅ Clean Architecture Setup
-- [x] Domain folder created
-- [x] Domain/Entities folder created
-- [x] Domain/Enums folder created
-- [x] Domain/Common folder created
-- [x] Application folder created
-- [x] Application/Interfaces folder created
-- [x] Application/DTOs folder created
-- [x] Application/Services folder created
-- [x] Infrastructure folder created
-- [x] Infrastructure/Data folder created
-- [x] Infrastructure/Repositories folder created
+## ✅ DAY 11 — CHECKOUT FLOW
+- Multi-step checkout (Address → Payment → Review)
+- Address form with validation
+- Payment method selection (COD active)
+- Order summary with breakdowns
+- Place order with duplicate prevention
+- Order success page with animation
 
-## ✅ Domain Entities Created
-- [x] BaseEntity.cs (Id, CreatedAt, UpdatedAt, IsDeleted)
-- [x] ITenantEntity.cs (Multi-tenant interface)
-- [x] Tenant.cs entity
-- [x] User.cs entity
-- [x] Category.cs entity
-- [x] Product.cs entity
+## ✅ DAY 12 — PROFILE MANAGEMENT
+- Update profile (name + phone)
+- Email read-only (security)
+- Change password (with strength check)
+- Real order count on account dashboard
 
-## ✅ Database Context
-- [x] AppDbContext.cs created
-- [x] DbSets configured (Tenants, Users, Categories, Products)
-- [x] Unique indexes configured
-- [x] Multi-tenant constraints setup
-- [x] Price precision configured
+## ✅ DAY 13 — ADDRESSES MODULE
+- Address entity with types (Home/Office/Other)
+- Full CRUD APIs
+- Set default address
+- Max 10 addresses per user
+- **Location detection** (browser geolocation)
+- **Reverse geocoding** (OpenStreetMap - FREE)
+- **Pincode auto-fill** (India Post API - FREE)
+- Auto-fill form from current location
+- Address form modal (portal-based)
+- Delete confirmation modal
+- **Checkout integration** — saved addresses selection
 
-## ✅ Database Migration
-- [x] Initial migration created (InitialCreate)
-- [x] Migration applied to Neon database
-- [x] 4 tables created in PostgreSQL:
-  - [x] Tenants table
-  - [x] Users table
-  - [x] Categories table
-  - [x] Products table
-- [x] __EFMigrationsHistory table auto-created
-- [x] Database verified on Neon dashboard
+## ✅ DAY 14 — WISHLIST MODULE
+- Wishlist entity
+- Toggle/Add/Remove APIs
+- Wishlist page (mobile list + desktop grid)
+- Heart icon on all product cards
+- Real-time count badges (navbar + bottom nav)
+- Move to cart from wishlist (auto-remove)
+- Clear wishlist with confirmation
+- Real count on account dashboard
 
-## ✅ First DTO Created
-- [x] TenantDto.cs created
-- [x] CreateTenantDto.cs created
+## ✅ DAY 15 — REVIEWS & RATINGS
+- Review entity with rating (1-5)
+- Verified purchase only (delivered orders)
+- One review per user per product
+- Auto-update product's average rating
+- Rating breakdown (5⭐: 60%, etc.)
+- Filter reviews by rating
+- Edit/Delete own reviews
+- Review form modal (with star selector)
+- Product cards show real ratings
+- Product detail page reviews section
 
-## ✅ First API Controller
-- [x] TenantsController.cs created
-- [x] GET /api/tenants endpoint (all tenants)
-- [x] GET /api/tenants/{id} endpoint (by id)
-- [x] POST /api/tenants endpoint (create new)
-- [x] Slug uniqueness validation
-- [x] Soft delete filter applied
+## ✅ DAY 16 — PASSWORD RESET
+- PasswordResetToken entity
+- Token generation (48-byte secure)
+- 15-minute expiry
+- One-time use tokens
+- Invalidates previous tokens
+- Email-safe response (no info leak)
+- Rate limited (5/min)
+- Account unlock after reset
+- Dev mode: token shown in response
+- Console log for developer testing
 
-## ✅ Full Stack Flow Verified
-- [x] Browser → API → Database → Response ✅
-- [x] Two tenants successfully created (Vitakart, NutriNest)
+## ✅ DAY 17 — COUPONS SYSTEM
+- Coupon entity (Percentage + Fixed types)
+- CouponUsage tracking
+- Min order amount check
+- Max discount cap
+- Total + per-user usage limits
+- Expiry date management
+- Case-insensitive codes
+- **Auto-revalidate coupon on cart changes**
+- **Auto-remove if invalid**
+- **Track usage on order placement**
+- **Refund usage on order cancellation**
+- Coupon input in cart
+- Available coupons modal (bottom sheet mobile)
+- "Already Used" state in UI
+- Copy code with validation
 
+---
 
-# 📅 DAY 3 — MULTI-TENANT + JWT AUTH
+# 🎯 CURRENT SYSTEM STATUS
 
-## ✅ Multi-Tenant Middleware
-- [x] ITenantContext interface created
-- [x] TenantContext service implementation
-- [x] TenantResolverMiddleware created
-- [x] Middleware registered in Program.cs
-- [x] Reads X-Tenant-Slug header
-- [x] Validates tenant exists in DB
-- [x] Blocks invalid tenants (404)
-- [x] Blocks missing header (400)
-- [x] Sets tenant context per request
+## 🚀 Applications
+- **Web:** http://localhost:3000 ✅
+- **Admin:** http://localhost:3001 ✅ (EMPTY)
+- **API:** http://localhost:5208 ✅
+- **Docs:** http://localhost:5208/scalar/v1 ✅
+- **Database:** Neon PostgreSQL Cloud ✅
 
-## ✅ JWT Authentication Setup
-- [x] Microsoft.AspNetCore.Authentication.JwtBearer installed
-- [x] System.IdentityModel.Tokens.Jwt installed
-- [x] BCrypt.Net-Next installed
-- [x] JWT secrets added to .env
-- [x] JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE configured
+## 📊 Database Tables (15)
+- [x] Tenants
+- [x] Users (with lockout tracking)
+- [x] RefreshTokens
+- [x] PasswordResetTokens
+- [x] Categories (nested)
+- [x] Products (with rating)
+- [x] Reviews
+- [x] Addresses
+- [x] Wishlists
+- [x] Carts
+- [x] CartItems
+- [x] Coupons
+- [x] CouponUsages
+- [x] Orders (with snapshots)
+- [x] OrderItems
 
-## ✅ Auth Layer Created
-- [x] AuthDto.cs (RegisterDto, LoginDto, AuthResponseDto, UserInfoDto)
-- [x] IJwtService interface
-- [x] IAuthService interface
-- [x] JwtService implementation
-- [x] AuthService implementation
-- [x] AuthController with endpoints
+## 🌐 API Endpoints (60+)
 
-## ✅ Auth Endpoints Working
+### Auth (9)
 - [x] POST /api/auth/register
 - [x] POST /api/auth/login
-- [x] Password hashing with BCrypt
-- [x] JWT access token generation
-- [x] Refresh token generation
-- [x] Multi-tenant aware (email unique per tenant)
+- [x] POST /api/auth/refresh
+- [x] POST /api/auth/logout
+- [x] GET /api/auth/me
+- [x] POST /api/auth/change-role (Admin+)
+- [x] POST /api/auth/forgot-password
+- [x] POST /api/auth/reset-password
+- [x] PUT /api/auth/profile
 
-## ✅ Exception Handling
-- [x] AppException base class
-- [x] NotFoundException (404)
-- [x] ValidationException (400)
-- [x] UnauthorizedException (401)
-- [x] GlobalExceptionMiddleware
-- [x] Consistent error format
+### Tenants (3) — SuperAdmin
+- [x] GET, POST /api/tenants
+- [x] GET, PUT, DELETE /api/tenants/{id}
 
+### Categories (9)
+- [x] GET /api/categories (all + tree + top-level)
+- [x] GET /api/categories/{id | slug}
+- [x] POST, PUT, DELETE (Admin+)
 
-# 📅 DAY 4 — API DOCS + REFRESH TOKENS + CORS
+### Products (8)
+- [x] GET /api/products (with filters, pagination, sorting)
+- [x] GET /api/products/featured
+- [x] GET /api/products/{id | slug}
+- [x] GET /api/products/category/{id}
+- [x] POST, PUT, DELETE
 
-## ✅ Scalar UI (API Documentation)
-- [x] Scalar.AspNetCore package installed
-- [x] Interactive API docs setup
-- [x] DeepSpace theme configured
-- [x] Available at /scalar/v1
-- [x] All endpoints documented automatically
-- [x] TenantResolverMiddleware updated to skip /scalar
+### Cart (5)
+- [x] GET /api/cart
+- [x] POST /api/cart/items
+- [x] PUT /api/cart/items/{id}
+- [x] DELETE /api/cart/items/{id}
+- [x] DELETE /api/cart
 
-## ✅ Refresh Token System (Production Grade)
-- [x] RefreshToken entity created
-- [x] RefreshTokens table migration
-- [x] Token rotation on refresh (security)
-- [x] Token stored in database (revocable)
-- [x] Device info tracking (User-Agent)
-- [x] IP address tracking
-- [x] Multi-device support
-- [x] Automatic expiry check
-- [x] Logout endpoint (revoke refresh token)
-- [x] POST /api/auth/refresh endpoint
-- [x] POST /api/auth/logout endpoint
-- [x] Testing complete (rotation working)
+### Orders (5)
+- [x] POST /api/orders
+- [x] GET /api/orders (paginated + filters)
+- [x] GET /api/orders/{id}
+- [x] GET /api/orders/number/{orderNumber}
+- [x] POST /api/orders/{id}/cancel
 
-## ✅ CORS Configuration
-- [x] CORS policy configured
-- [x] Environment-based allowed origins
-- [x] .env: CORS_ALLOWED_ORIGINS
-- [x] Credentials support (for cookies later)
-- [x] All HTTP methods allowed
-- [x] Frontend-ready configuration
+### Addresses (7)
+- [x] GET /api/addresses
+- [x] GET /api/addresses/default
+- [x] GET /api/addresses/{id}
+- [x] POST /api/addresses
+- [x] PUT /api/addresses/{id}
+- [x] PATCH /api/addresses/{id}/set-default
+- [x] DELETE /api/addresses/{id}
 
+### Wishlist (7)
+- [x] GET /api/wishlist
+- [x] GET /api/wishlist/count
+- [x] GET /api/wishlist/product-ids
+- [x] GET /api/wishlist/check/{productId}
+- [x] POST /api/wishlist/toggle
+- [x] DELETE /api/wishlist/{productId}
+- [x] DELETE /api/wishlist
 
-# 📅 DAY 5 — CATEGORY & PRODUCT CRUD
+### Reviews (7)
+- [x] GET /api/reviews/product/{id}
+- [x] GET /api/reviews/product/{id}/stats
+- [x] GET /api/reviews/product/{id}/eligibility
+- [x] GET /api/reviews/product/{id}/my-review
+- [x] GET /api/reviews/my-reviews
+- [x] POST, PUT, DELETE /api/reviews
 
-## ✅ Category CRUD (Nested Hierarchy)
-- [x] Category entity updated with ParentCategoryId
-- [x] Migration: AddCategoryHierarchy
-- [x] CategoryDto, CreateCategoryDto, UpdateCategoryDto, CategoryTreeDto
-- [x] ICategoryService interface
-- [x] CategoryService implementation
-- [x] CategoriesController with endpoints:
-  - [x] GET /api/categories (all)
-  - [x] GET /api/categories/top-level
-  - [x] GET /api/categories/tree (hierarchical)
-  - [x] GET /api/categories/{id}
-  - [x] GET /api/categories/slug/{slug}
-  - [x] GET /api/categories/{parentId}/sub-categories
-  - [x] POST /api/categories (protected)
-  - [x] PUT /api/categories/{id} (protected)
-  - [x] DELETE /api/categories/{id} (protected)
-- [x] Parent-child relationship
-- [x] Sub-categories validation
-- [x] Slug uniqueness per tenant
-- [x] Multi-tenant filtering
+### Coupons (5)
+- [x] GET /api/coupons
+- [x] GET /api/coupons/{code}
+- [x] POST /api/coupons/validate
+- [x] POST /api/coupons/apply
+- [x] DELETE /api/coupons/remove
 
-## ✅ Product CRUD (Production-Grade)
-- [x] Product entity enhanced (SKU, stock, discount, image)
-- [x] Migration: AddProductEnhancements
-- [x] Category foreign key relationship
-- [x] PaginatedResultDto (reusable)
-- [x] ProductDto, CreateProductDto, UpdateProductDto, ProductQueryDto
-- [x] IProductService interface
-- [x] ProductService implementation
-- [x] ProductsController with endpoints:
-  - [x] GET /api/products (with pagination + filters + sorting)
-  - [x] GET /api/products/featured
-  - [x] GET /api/products/{id}
-  - [x] GET /api/products/slug/{slug}
-  - [x] GET /api/products/category/{categoryId}
-  - [x] POST /api/products (protected)
-  - [x] PUT /api/products/{id} (protected)
-  - [x] DELETE /api/products/{id} (protected)
-- [x] Search by name, brand, SKU
-- [x] Filter by category, brand, price range, featured, stock
-- [x] Sort by name, price, newest, oldest
-- [x] Pagination (page, pageSize)
-- [x] Discount price validation
+---
 
+# 🔐 SECURITY SCORE: 9.5/10 ⭐
 
-# 📅 DAY 6 — ROLE-BASED AUTHORIZATION
+## ✅ Active Protections
+- JWT + Refresh Token (with rotation)
+- BCrypt password hashing
+- Role-based authorization (4 roles)
+- Multi-tenant data isolation
+- Account lockout (5 attempts / 15 min)
+- Rate limiting (4 policies)
+- 7 Security headers
+- HTTPS enforcement (production)
+- CORS whitelisting
+- Global exception handling
+- FluentValidation on all inputs
+- Password reset tokens (15 min, single-use)
+- Ownership checks (user can only edit own data)
+- Idempotency keys (prevent duplicate orders)
+- SQL injection protection (EF Core)
+- XSS protection (React + CSP)
+- CSRF protection (Bearer tokens)
 
-## ✅ Role System
-- [x] UserRole enum created (Customer, Vendor, Admin, SuperAdmin)
-- [x] UserRoleExtensions (ToRoleString, ParseRole, HasPermissionOf)
-- [x] Role hierarchy implemented
-- [x] User entity updated (enum instead of string)
-- [x] Migration: UserRoleEnum
-- [x] Role stored as string in DB (readable)
+---
 
-## ✅ Role-Based Access Control
-- [x] RequireRoleAttribute created
-- [x] Supports minimum role (hierarchy)
-- [x] Supports exact match option
-- [x] Multi-claim type support (role, ClaimTypes.Role)
-- [x] Proper 403 Forbidden responses
+# 🚧 PENDING FEATURES
 
-## ✅ SuperAdmin Auto-Seed
-- [x] DatabaseSeeder created
-- [x] Auto-runs on application startup
-- [x] Credentials from .env (SUPERADMIN_EMAIL, PASSWORD, NAME)
-- [x] Idempotent (safe to run multiple times)
-- [x] Only creates if not exists
+## 🔴 HIGH PRIORITY
 
-## ✅ Multi-Tenant Enhancement
-- [x] TenantResolverMiddleware updated
-- [x] SuperAdmin bypasses tenant header (accesses all tenants)
-- [x] Regular users still require X-Tenant-Slug
+### 💳 Payment Integration
+- [ ] Razorpay order creation
+- [ ] Razorpay payment verification
+- [ ] Razorpay webhook handling
+- [ ] Razorpay refund API
+- [ ] Payment receipt PDF
+- [ ] UPI/Card/NetBanking support
+- [ ] Payment failure handling
+- [ ] Retry payment flow
 
-## ✅ Endpoint Protection Applied
-- [x] Categories: Admin+ for create/update/delete
-- [x] Products: Vendor+ for create/update, Admin+ for delete
-- [x] Tenants: SuperAdmin only for all operations
-- [x] Change role endpoint (SuperAdmin/Admin only)
-
-## ✅ Change Role Feature
-- [x] ChangeRoleDto created
-- [x] POST /api/auth/change-role endpoint
-- [x] SuperAdmin can change any user across tenants
-- [x] Admin can change roles in own tenant only
-- [x] Admin cannot promote to SuperAdmin
-- [x] Cannot change own role (security)
-
-
-# 📅 DAY 7 — REPOSITORY PATTERN + FLUENT VALIDATION
-
-## ✅ Repository Pattern (Hybrid Approach)
-- [x] IRepository<T> generic interface
-- [x] Repository<T> generic implementation
-- [x] Automatic multi-tenant filtering
-- [x] Automatic soft delete filtering
-- [x] Auto-set TenantId on Add
-- [x] Auto-set CreatedAt/UpdatedAt timestamps
-- [x] QueryableExtensions helper
-
-## ✅ Specific Repositories
-- [x] ICategoryRepository + CategoryRepository
-- [x] IProductRepository + ProductRepository
-- [x] IUserRepository + UserRepository
-- [x] IRefreshTokenRepository + RefreshTokenRepository
-- [x] ITenantRepository + TenantRepository (cross-tenant)
-
-## ✅ Unit of Work Pattern
-- [x] IUnitOfWork interface
-- [x] UnitOfWork implementation
-- [x] Lazy-loaded repositories
-- [x] Transaction support (Begin/Commit/Rollback)
-- [x] Single SaveChangesAsync for all operations
-
-## ✅ Services Rewritten
-- [x] AuthService uses IUnitOfWork
-- [x] CategoryService uses IUnitOfWork
-- [x] ProductService uses IUnitOfWork
-- [x] TenantsController uses IUnitOfWork
-- [x] All DbContext direct access removed
-
-## ✅ FluentValidation Setup
-- [x] FluentValidation.AspNetCore installed
-- [x] FluentValidation.DependencyInjectionExtensions installed
-- [x] Auto-registration from assembly
-- [x] Disabled DataAnnotations validation
-
-## ✅ Validators Created (8)
-- [x] RegisterDtoValidator (email, password strength, name, phone)
-- [x] LoginDtoValidator
-- [x] CreateCategoryDtoValidator (slug format, image URL)
-- [x] UpdateCategoryDtoValidator
-- [x] CreateProductDtoValidator (SKU format, discount logic)
-- [x] UpdateProductDtoValidator
-- [x] CreateTenantDtoValidator (domain format)
-- [x] ChangeRoleDtoValidator (enum check)
-
-## ✅ Global Exception Handler Updated
-- [x] Handles FluentValidation errors
-- [x] Field-level error responses
-- [x] camelCase property names
-- [x] Consistent error format across app
-
-
-# 📅 DAY 8 — PHASE 1 SECURITY HARDENING
-
-## ✅ Rate Limiting (Anti Brute-Force & DDoS)
-- [x] .NET 10 built-in rate limiter used
-- [x] RateLimitPolicies class (centralized config)
-- [x] 4 policies configured:
-  - [x] Global: 100 req/min per IP
-  - [x] Auth: 5 req/min (login/register) — strict
-  - [x] Read: 200 req/min (GET requests)
-  - [x] Write: 30 req/min (POST/PUT/DELETE)
-- [x] Per-user tracking (after login)
-- [x] Per-IP tracking (before login)
-- [x] Custom 429 response with retry-after header
-- [x] Applied to auth endpoints
-- [x] All values configurable via .env
-
-## ✅ Security Headers Middleware
-- [x] SecurityHeadersMiddleware created
-- [x] X-Frame-Options: DENY (clickjacking)
-- [x] X-Content-Type-Options: nosniff (MIME sniffing)
-- [x] X-XSS-Protection: 1; mode=block
-- [x] Referrer-Policy: strict-origin-when-cross-origin
-- [x] Permissions-Policy (disable camera/mic/geolocation)
-- [x] Content-Security-Policy (XSS prevention)
-- [x] Strict-Transport-Security (HTTPS only)
-- [x] Server header removed
-- [x] X-Powered-By header removed
-
-## ✅ Account Lockout (Brute Force Protection)
-- [x] User entity updated (FailedLoginAttempts, LockedUntil)
-- [x] Migration: AddAccountLockout
-- [x] IsLocked helper property
-- [x] AuthService.LoginAsync updated:
-  - [x] Check if account locked
-  - [x] Increment failed attempts on wrong password
-  - [x] Lock account after 5 failed attempts (15 min)
-  - [x] Reset counter on successful login
-  - [x] Show attempts remaining in error message
-- [x] All values configurable via .env
-
-## ✅ HTTPS Enforcement
-- [x] HSTS configured (production only)
-- [x] Preload enabled
-- [x] IncludeSubDomains enabled
-- [x] MaxAge: 365 days
-- [x] HTTPS redirection with 307 status
-- [x] Development mode allows HTTP
-
-## ✅ Request Size Limits (DoS Prevention)
-- [x] MAX_REQUEST_BODY_SIZE_MB in .env
-- [x] FormOptions configured
-- [x] Kestrel limits configured
-- [x] AddServerHeader = false
-
-## ✅ Additional Security
-- [x] ForwardedHeaders middleware (accurate IP behind proxy)
-- [x] Stricter JWT clock skew (1 min instead of 5)
-- [x] ClientKey helper (user ID if logged in, else IP)
-
-
-# 🎯 COMPLETE SYSTEM STATUS
-
-## 🚀 Applications Running
-- Web:      http://localhost:3000 ✅
-- Admin:    http://localhost:3001 ✅
-- API:      http://localhost:5208 ✅
-- Docs:     http://localhost:5208/scalar/v1 ✅
-- Database: Neon PostgreSQL Cloud ✅
-
-## 🔐 Security Features Active
-- [x] JWT + Refresh Token (with rotation)
-- [x] BCrypt password hashing
-- [x] Role-based authorization (4 roles)
-- [x] Multi-tenant isolation
-- [x] Account lockout (5 attempts / 15 min)
-- [x] Rate limiting (4 policies)
-- [x] Security headers (7 headers)
-- [x] HTTPS enforcement (production)
-- [x] CORS configured
-- [x] Global exception handling
-- [x] FluentValidation on all inputs
-- [x] SuperAdmin auto-seed
-
-## 🏗️ Architecture Features
-- [x] Clean Architecture (Domain, Application, Infrastructure, API)
-- [x] Repository Pattern (Generic + Specific)
-- [x] Unit of Work pattern
-- [x] Multi-tenant with auto-filtering
-- [x] Soft delete with auto-filtering
-- [x] Custom exceptions
-- [x] DTOs for all operations
-- [x] Environment-based configuration
-
-## 📊 Database Tables (5)
-- [x] Tenants
-- [x] Users (with role enum, lockout fields)
-- [x] Categories (with parent-child)
-- [x] Products (with SKU, stock, discount)
-- [x] RefreshTokens (with device tracking)
-
-## 🌐 API Endpoints (20+)
-### Auth
-- POST /api/auth/register
-- POST /api/auth/login
-- POST /api/auth/refresh
-- POST /api/auth/logout
-- GET /api/auth/me (protected)
-- POST /api/auth/change-role (Admin+)
-
-### Tenants (SuperAdmin only)
-- GET /api/tenants
-- GET /api/tenants/{id}
-- POST /api/tenants
-
-### Categories
-- GET /api/categories
-- GET /api/categories/top-level
-- GET /api/categories/tree
-- GET /api/categories/{id}
-- GET /api/categories/slug/{slug}
-- GET /api/categories/{parentId}/sub-categories
-- POST /api/categories (Admin+)
-- PUT /api/categories/{id} (Admin+)
-- DELETE /api/categories/{id} (Admin+)
-
-### Products
-- GET /api/products (with filters)
-- GET /api/products/featured
-- GET /api/products/{id}
-- GET /api/products/slug/{slug}
-- GET /api/products/category/{categoryId}
-- POST /api/products (Vendor+)
-- PUT /api/products/{id} (Vendor+)
-- DELETE /api/products/{id} (Admin+)
-
-
-# 💡 Important Learnings
-
-## Backend
-- .NET does NOT auto reload on code change (manual restart)
-- Frontend (Next.js) auto reloads via hot reload
-- JWT claim mapping needs to be cleared for custom claims
-- FluentValidation.ValidationException != api.Domain.Exceptions.ValidationException
-- Enums in EF Core need HasConversion<string>() for readable DB storage
-- Repository pattern with multi-tenant filtering is powerful
-- Rate limiting policies should be different for auth vs read vs write
-- Security headers prevent 80% of common attacks
-
-## Git
-- git add -A adds all changes from anywhere in repo
-- git add . only adds current folder + subfolders
-- Always work from repo root for safety
-- .env must be in .gitignore (never commit secrets)
-
-
-# 📊 SECURITY SCORE: 9/10 ⭐⭐⭐⭐⭐
-
-## What's Protected:
-✅ SQL Injection (EF Core parameterized queries)
-✅ XSS (CSP + security headers)
-✅ CSRF (Bearer token authentication)
-✅ Clickjacking (X-Frame-Options)
-✅ MIME Sniffing (X-Content-Type-Options)
-✅ Brute Force (Rate limiting + Account lockout)
-✅ DDoS (Rate limiting + Request size limits)
-✅ Data Leaks (Multi-tenant auto-filtering)
-✅ MITM (HTTPS + HSTS in production)
-✅ Weak Passwords (Password strength validation)
-
-
-# 📌 NEXT SESSION PLAN
-
-## 🎯 Priority: Frontend Development (Web App)
-
-### Phase A — Frontend Setup & Auth
-- [ ] Verify Next.js 16 setup
-- [ ] Install Shadcn UI components
-- [ ] Setup theme system (CSS variables)
-- [ ] Setup Axios instance with interceptors
-- [ ] Setup React Query for API calls
-- [ ] Setup Zustand for state management
-- [ ] Create API service layer
-- [ ] Login page UI
-- [ ] Register page UI
-- [ ] Auth context/store
-- [ ] Protected route wrapper
-- [ ] Layout (Navbar, Footer)
-
-### Phase B — Public Pages
-- [ ] Home page (hero, featured products)
-- [ ] Product listing page (with filters)
-- [ ] Product detail page
-- [ ] Category page
-- [ ] Search functionality
-
-### Phase C — User Features
-- [ ] Cart page
-- [ ] Wishlist page
-- [ ] User profile
-- [ ] Order history
-
-### Phase D — Admin Panel
-- [ ] Admin dashboard
-- [ ] Product management
-- [ ] Category management
-- [ ] Order management
-- [ ] User management
-
-## 🔮 Later Backend Additions
+### 📧 Email Service (SendGrid/Gmail SMTP)
+- [ ] SendGrid setup
+- [ ] Welcome email
 - [ ] Email verification
-- [ ] Password reset flow
-- [ ] Cart Module (backend)
-- [ ] Order Module (backend)
-- [ ] Address Module (backend)
-- [ ] Wishlist Module (backend)
-- [ ] Payment integration (Razorpay)
-- [ ] Shipping integration (Shiprocket)
-- [ ] Image upload (Cloudinary)
-- [ ] Audit logging
-- [ ] Email service (SendGrid)
-- [ ] SMS service (MSG91)
+- [ ] **Password reset email** (backend token ready)
+- [ ] Order confirmation
+- [ ] Order shipped
+- [ ] Order delivered
+- [ ] Order cancelled
+- [ ] Refund emails
+- [ ] Newsletter
 
-## 🚀 Future Deployment
-- [ ] Docker setup
-- [ ] Deploy backend (Azure/Render)
-- [ ] Deploy frontend (Vercel)
-- [ ] Domain configuration
+### 📄 Content Pages (Quick Wins - 2 hrs)
+- [ ] About Us page
+- [ ] Contact Us page (with form)
+- [ ] FAQ page
+- [ ] Terms & Conditions
+- [ ] Privacy Policy
+- [ ] Return Policy
+- [ ] Shipping Policy
+- [ ] 404 page
+- [ ] 500 page
+
+---
+
+## 🟡 MEDIUM PRIORITY
+
+### 🖼️ Image Upload (Cloudinary)
+- [ ] Cloudinary account setup
+- [ ] Upload preset configuration
+- [ ] Direct upload from frontend
+- [ ] Auto optimization
+- [ ] Responsive sizes
+- [ ] Image deletion
+- [ ] Profile picture upload
+- [ ] Product images upload
+- [ ] Category images upload
+- [ ] Review images
+
+### 📱 SMS Service (MSG91)
+- [ ] MSG91 setup
+- [ ] OTP verification
+- [ ] Order placed SMS
+- [ ] Order shipped SMS
+- [ ] Order delivered SMS
+- [ ] Order cancelled SMS
+
+### 🚚 Shipping (Shiprocket)
+- [ ] Shiprocket authentication
+- [ ] Auto shipment creation
+- [ ] AWB number generation
+- [ ] Shipment tracking API
+- [ ] Delivery status webhook
+- [ ] Estimated delivery date
+- [ ] Multiple courier support
+- [ ] Delivery zone management
+
+### 🔍 Advanced Search (MeiliSearch)
+- [ ] MeiliSearch cloud setup
+- [ ] Product indexing
+- [ ] Instant search
+- [ ] Search suggestions autocomplete
+- [ ] Popular searches tracking
+- [ ] Search history per user
+- [ ] Re-indexing job
+
+---
+
+## 🟢 LOW PRIORITY (Big Projects)
+
+### 🖥️ Admin Panel (10+ hrs)
+**Location: apps/admin/ (EMPTY)**
+
+#### Admin - Layout
+- [ ] Admin sidebar navigation
+- [ ] Admin header
+- [ ] Admin mobile responsive layout
+- [ ] Breadcrumb
+- [ ] Admin notifications bell
+
+#### Admin - Dashboard
+- [ ] Stats cards (sales, orders, users, products)
+- [ ] Revenue chart
+- [ ] Orders chart
+- [ ] Top selling products table
+- [ ] Recent orders table
+- [ ] Low stock alerts
+
+#### Admin - Product Management
+- [ ] Products list (with search, filter, sort)
+- [ ] Add/Edit product
+- [ ] Bulk actions
+- [ ] Product images management
+- [ ] Bulk import/export CSV
+
+#### Admin - Category Management
+- [ ] Categories list
+- [ ] Add/Edit category
+- [ ] Sub categories management
+- [ ] Reorder (drag and drop)
+
+#### Admin - Order Management
+- [ ] Orders list with filters
+- [ ] Order detail page
+- [ ] Update order status
+- [ ] Print invoice
+- [ ] Bulk status update
+
+#### Admin - User Management
+- [ ] Users list
+- [ ] User detail page
+- [ ] Activate/Deactivate user
+
+#### Admin - Coupon Management
+- [ ] Coupons list
+- [ ] Add/Edit coupon
+- [ ] Coupon usage stats
+
+#### Admin - Review Management
+- [ ] Reviews list
+- [ ] Approve/Reject/Delete review
+
+#### Admin - Inventory Management
+- [ ] Stock update
+- [ ] Low stock list
+- [ ] Inventory log
+
+#### Admin - Reports
+- [ ] Sales report
+- [ ] Revenue report
+- [ ] Orders report
+- [ ] Customer report
+- [ ] Export CSV/Excel
+
+#### Admin - CMS Management
+- [ ] Pages CRUD
+- [ ] Banners CRUD
+- [ ] Blog CRUD
+- [ ] FAQ CRUD
+
+#### Admin - Settings
+- [ ] General settings
+- [ ] Payment settings
+- [ ] Shipping settings
+- [ ] Email/SMS templates
+- [ ] SEO settings
+- [ ] Feature flags
+
+#### Admin - Super Admin
+- [ ] Tenants list
+- [ ] Tenant CRUD
+- [ ] Global settings
+- [ ] Platform stats
+
+---
+
+### 🎁 Subscriptions
+- [ ] Subscription plans CRUD
+- [ ] Subscribe to plan
+- [ ] Auto renewal
+- [ ] Pause/Resume/Cancel
+- [ ] Subscription history
+- [ ] Trial period support
+
+### 💰 Loyalty Points
+- [ ] Earn points on purchase
+- [ ] Redeem points on checkout
+- [ ] Points expiry management
+- [ ] Points history
+
+### 🎯 Affiliate & Referral
+- [ ] Generate referral code
+- [ ] Track referral usage
+- [ ] Reward types (discount/cashback/points)
+- [ ] Affiliate program
+
+### 🔔 Notifications
+- [ ] In-app notifications
+- [ ] Notifications page
+- [ ] Push notifications setup
+- [ ] Unread count
+
+### 📊 Analytics
+- [ ] Google Analytics 4 setup
+- [ ] Page view tracking
+- [ ] Add to cart events
+- [ ] Purchase events
+- [ ] Facebook Pixel
+
+### 🛠️ Feature Flags
+- [ ] Create feature flag entity
+- [ ] Toggle features per tenant
+- [ ] Global feature flags
+
+### ⚙️ Multi-Tenant Enhancements
+- [ ] Tenant themes (per tenant)
+- [ ] Tenant configs (per tenant)
+- [ ] Custom domain mapping
+- [ ] White label branding
+- [ ] Tenant billing
+
+---
+
+# 📌 INFRASTRUCTURE PENDING
+
+### 🚀 Deployment
+- [ ] Frontend deploy (Vercel)
+- [ ] Backend deploy (Azure App Service / Render)
+- [ ] Domain purchase
+- [ ] DNS configuration
 - [ ] SSL certificates
-- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] CDN setup
+- [ ] Environment secrets
+
+### 🐳 Docker
+- [ ] Backend Dockerfile
+- [ ] Frontend Dockerfile
+- [ ] Admin Dockerfile
+- [ ] docker-compose (local dev)
+- [ ] docker-compose (production)
+
+### 🔄 CI/CD
+- [ ] GitHub Actions workflows
+- [ ] Lint check on PR
+- [ ] Type check on PR
+- [ ] Auto tests on PR
+- [ ] Auto deploy on main
+- [ ] Auto migrations on deploy
+
+### 💾 Caching (Redis)
+- [ ] Upstash Redis setup
+- [ ] Product list caching
+- [ ] Category caching
+- [ ] Session caching
+- [ ] Cache invalidation strategy
+
+### 🐛 Error Tracking
+- [ ] Sentry setup (backend)
+- [ ] Sentry setup (frontend)
+- [ ] Alert notifications
+
+### 📈 Monitoring
+- [ ] UptimeRobot setup
+- [ ] Database monitoring
+- [ ] API performance monitoring
+- [ ] Alert notifications
+
+### 🌐 SEO
+- [ ] Meta tags all pages
+- [ ] OG tags
+- [ ] Sitemap.xml
+- [ ] Robots.txt
+- [ ] Schema markup
+- [ ] Core Web Vitals
+
+### ⚡ Performance
+- [ ] Image optimization
+- [ ] Code splitting
+- [ ] API response caching
+- [ ] Lighthouse audit
+- [ ] Bundle size analysis
+
+### 🧪 Testing
+- [ ] Unit tests (backend)
+- [ ] Integration tests (backend)
+- [ ] Component tests (frontend)
+- [ ] E2E tests (Playwright)
+- [ ] Load testing (k6)
+
+### ⏰ Background Jobs
+- [ ] Hangfire setup
+- [ ] Low stock check job
+- [ ] Abandoned cart email job
+- [ ] Report generation job
+- [ ] Subscription renewal job
+
+---
+
+# 🎯 SUGGESTED ROADMAP
+
+## 🚀 Phase A: MVP LAUNCH (12-15 hrs)
+
+**Goal: App LIVE and revenue-generating**
+
+1. [ ] **Content Pages** (2 hrs) — About, Contact, FAQ, Privacy, Terms
+2. [ ] **Razorpay Integration** (4 hrs) — Real payments
+3. [ ] **Email Service** (2 hrs) — SendGrid + order confirmations
+4. [ ] **Image Upload** (2 hrs) — Cloudinary for products
+5. [ ] **Deploy to Production** (4 hrs) — Vercel + Render
+
+   **→ 🎉 GO LIVE!**
+
+---
+
+## 🏢 Phase B: ADMIN PANEL (15 hrs)
+
+**Goal: Business operations tool**
+
+1. [ ] Admin Layout + Auth (2 hrs)
+2. [ ] Dashboard with stats (2 hrs)
+3. [ ] Product management CRUD (3 hrs)
+4. [ ] Order management (2 hrs)
+5. [ ] User management (1 hr)
+6. [ ] Coupon management (1 hr)
+7. [ ] Review management (1 hr)
+8. [ ] Reports (2 hrs)
+9. [ ] Settings (1 hr)
+
+---
+
+## 🚀 Phase C: ADVANCED FEATURES (Optional - 20+ hrs)
+
+1. [ ] SMS integration (MSG91)
+2. [ ] Shipping integration (Shiprocket)
+3. [ ] MeiliSearch (instant search)
+4. [ ] Redis caching
+5. [ ] Google Analytics
+6. [ ] Sentry error tracking
+7. [ ] Background jobs (Hangfire)
+8. [ ] Subscriptions
+9. [ ] Loyalty points
+10. [ ] Referral system
+11. [ ] CMS (blog, FAQ, banners)
+
+---
+
+# 📊 FINAL PROGRESS SUMMARY
+
+## ✅ COMPLETED (75%)
+- Foundation + Architecture: **100%**
+- Backend Core: **90%**
+- Frontend Customer App: **85%**
+- Security: **95%**
+- Multi-tenant: **80%**
+
+## 🚧 IN PROGRESS
+- Nothing currently
+
+## ❌ PENDING (25%)
+- Payment Integration
+- Email/SMS Services
+- Content Pages
+- Admin Panel
+- Image Upload
+- Deployment
+- Advanced Features
+
+---
+
+# 🎯 IMMEDIATE NEXT STEPS
+
+## Choose Your Path:
+
+### Option A: 🚀 **Launch Fast (RECOMMENDED)**

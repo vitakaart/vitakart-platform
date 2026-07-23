@@ -33,7 +33,7 @@ export default function LoginPage() {
   const isHydrated = useIsHydrated();
   const hasRedirected = useRef(false);
 
-  // ✅ Only redirect if already logged in on page load (not during login)
+  // Only redirect if already logged in on page load (not during login)
   useEffect(() => {
     // Wait for hydration to complete
     if (!isHydrated) return;

@@ -48,6 +48,26 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    // POST: api/auth/forgot-password
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<ForgotPasswordResponseDto>> ForgotPassword(ForgotPasswordDto dto)
+    {
+        var ipAddress = GetClientIp();
+        var result = await _authService.ForgotPasswordAsync(dto.Email, ipAddress);
+        return Ok(result);
+    }
+
+    // POST: api/auth/reset-password
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        await _authService.ResetPasswordAsync(dto.Token, dto.NewPassword);
+        return Ok(new { message = "Password reset successfully" });
+    }
+
+
     // POST: api/auth/refresh — STRICT rate limit
     [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("refresh")]

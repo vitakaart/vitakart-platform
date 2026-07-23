@@ -80,13 +80,30 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         {product.name}
       </h3>
 
-      <div className="mt-2 flex items-center gap-1 text-yellow-500">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star key={star} size={12} fill="currentColor" />
-        ))}
-        <span className="text-[11px] font-semibold text-[#6B665D] ml-1">4.8</span>
-      </div>
-
+      {product.totalReviews > 0 ? (
+        <div className="mt-2 flex items-center gap-1">
+          <div className="flex items-center gap-0.5 text-yellow-500">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={12}
+                className={
+                  star <= Math.round(product.averageRating)
+                    ? "fill-yellow-500 text-yellow-500"
+                    : "fill-transparent text-stone-300"
+                }
+              />
+            ))}
+          </div>
+          <span className="text-[11px] font-semibold text-[#6B665D] ml-1">
+            {product.averageRating.toFixed(1)} ({product.totalReviews})
+          </span>
+        </div>
+      ) : (
+        <div className="mt-2 flex items-center gap-1">
+          <span className="text-[11px] text-stone-400">No reviews yet</span>
+        </div>
+      )}
       <div className="mt-3 flex items-end justify-between">
         <div className="flex flex-row gap-2 items-center">
           <div className="text-base font-black text-red-600 leading-tight">

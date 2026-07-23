@@ -1,6 +1,9 @@
+// File: apps/web/components/checkout/summary.tsx
+// Order summary with coupon discount display
+
 "use client";
 
-import { Loader2, ShieldCheck, Truck, Clock, Gift, Tag } from "lucide-react";
+import { Loader2, ShieldCheck, Truck, Clock, Gift, Tag, Sparkles } from "lucide-react";
 import type { Cart } from "@/types/api";
 
 interface Props {
@@ -14,6 +17,9 @@ export function Summary({ cart, onPlaceOrder, isSubmitting, disabled }: Props) {
   const freeShippingThreshold = 999;
   const amountForFreeShipping = Math.max(0, freeShippingThreshold - cart.subtotal);
   const progressPercent = Math.min(100, (cart.subtotal / freeShippingThreshold) * 100);
+
+  // Total savings (product discount + coupon)
+  const totalSavings = cart.totalDiscount + cart.couponDiscount;
 
   return (
     <div className="bg-[#FFFDF8] rounded-2xl border border-[#E9E1D2] p-5 md:p-6 shadow-sm space-y-5">
@@ -71,15 +77,33 @@ export function Summary({ cart, onPlaceOrder, isSubmitting, disabled }: Props) {
           </span>
         </div>
 
-        {/* Discount */}
+        {/* Product Discount */}
         {cart.totalDiscount > 0 && (
           <div className="flex items-center justify-between text-sm animate-fade-in">
             <span className="text-[#6B665D] flex items-center gap-1.5">
               <Tag className="w-3.5 h-3.5 text-primary-500" />
-              Discount
+              Product Discount
             </span>
             <span className="font-bold text-primary-600">
               -₹{cart.totalDiscount.toLocaleString("en-IN")}
+            </span>
+          </div>
+        )}
+
+        {/* ✅ Coupon Discount */}
+        {cart.couponDiscount > 0 && cart.couponCode && (
+          <div className="flex items-center justify-between text-sm animate-fade-in">
+            <span className="text-[#6B665D] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+              <span>
+                Coupon{" "}
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  {cart.couponCode}
+                </span>
+              </span>
+            </span>
+            <span className="font-bold text-emerald-600">
+              -₹{cart.couponDiscount.toLocaleString("en-IN")}
             </span>
           </div>
         )}
@@ -109,20 +133,20 @@ export function Summary({ cart, onPlaceOrder, isSubmitting, disabled }: Props) {
             </p>
           </div>
         </div>
-        {cart.totalDiscount > 0 && (
-          <p className="text-xs text-primary-600 font-semibold text-right">
-            You save ₹{cart.totalDiscount.toLocaleString("en-IN")} on this order
+        {totalSavings > 0 && (
+          <p className="text-xs text-emerald-600 font-semibold text-right">
+            🎉 You save ₹{totalSavings.toLocaleString("en-IN")} on this order
           </p>
         )}
         <p className="text-[10px] text-[#6B665D] text-right mt-1">Including all taxes & fees</p>
       </div>
-
 
       {disabled && (
         <p className="text-xs text-red-500 font-semibold text-center bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
           ⚠️ Please select a delivery address
         </p>
       )}
+
       {/* Place Order Button */}
       <button
         type="button"

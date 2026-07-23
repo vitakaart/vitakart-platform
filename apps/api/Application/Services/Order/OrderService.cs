@@ -1,6 +1,5 @@
 // File: apps/api/Application/Services/Order/OrderService.cs
-// Order service — main orchestrator (clean & focused)
-// Delegates to helpers for calculations, mapping, validation
+// Order service with coupon usage tracking
 
 using api.Application.DTOs.Order;
 using api.Application.Interfaces;
@@ -14,13 +13,15 @@ namespace api.Application.Services.Order;
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ITenantContext _tenantContext;
     private readonly OrderCalculator _calculator;
     private readonly OrderNumberGenerator _numberGenerator;
     private readonly OrderMapper _mapper;
 
-    public OrderService(IUnitOfWork unitOfWork)
+    public OrderService(IUnitOfWork unitOfWork, ITenantContext tenantContext)
     {
         _unitOfWork = unitOfWork;
+        _tenantContext = tenantContext;
         _calculator = new OrderCalculator();
         _numberGenerator = new OrderNumberGenerator(unitOfWork);
         _mapper = new OrderMapper();
@@ -49,8 +50,17 @@ public class OrderService : IOrderService
         // 4. Validate stock
         ValidateStock(cartItems);
 
-        // 5. Calculate totals
+        // 5. Calculate totals (with coupon discount from cart)
         var totals = _calculator.Calculate(cartItems);
+        
+        // Override coupon discount from cart if applied
+        if (cart.CouponId.HasValue && cart.CouponDiscount > 0)
+        {
+            totals.CouponDiscount = cart.CouponDiscount;
+            totals.Total = totals.Subtotal - totals.TotalDiscount + totals.ShippingFee + totals.TaxAmount - cart.CouponDiscount;
+
+            if (totals.Total < 0) totals.Total = 0;
+        }
 
         // 6. Create order (transaction)
         await _unitOfWork.BeginTransactionAsync();
@@ -58,6 +68,10 @@ public class OrderService : IOrderService
         {
             var order = await CreateOrderEntityAsync(userId, dto, cart, totals);
             await CreateOrderItemsAsync(order, cartItems);
+
+            // ✅ Track coupon usage if applied
+            await TrackCouponUsageAsync(userId, cart, order);
+
             await ClearCartAsync(cart, cartItems);
 
             await _unitOfWork.SaveChangesAsync();
@@ -97,33 +111,31 @@ public class OrderService : IOrderService
     }
 
     // ==========================================
-    // GET USER'S ORDERS (Paginated)
+    // GET USER'S ORDERS (Paginated + Date Filter)
     // ==========================================
-// ==========================================
-// GET USER'S ORDERS (Paginated + Date Filter)
-// ==========================================
-public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
-    Guid userId,
-    int page = 1,
-    int pageSize = 10,
-    OrderStatus? statusFilter = null,
-    DateTime? fromDate = null,
-    DateTime? toDate = null)
-{
-    page = Math.Max(1, page);
-    pageSize = Math.Clamp(pageSize, 1, 50);
-
-    var (orders, totalCount) = await _unitOfWork.Orders
-        .GetUserOrdersAsync(userId, page, pageSize, statusFilter, fromDate, toDate);
-
-    return new PaginatedOrdersDto
+    public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
+        Guid userId,
+        int page = 1,
+        int pageSize = 10,
+        OrderStatus? statusFilter = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null)
     {
-        Orders = orders.Select(_mapper.ToListDto).ToList(),
-        TotalCount = totalCount,
-        Page = page,
-        PageSize = pageSize,
-    };
-}
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+
+        var (orders, totalCount) = await _unitOfWork.Orders
+            .GetUserOrdersAsync(userId, page, pageSize, statusFilter, fromDate, toDate);
+
+        return new PaginatedOrdersDto
+        {
+            Orders = orders.Select(_mapper.ToListDto).ToList(),
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+        };
+    }
+
     // ==========================================
     // CANCEL ORDER
     // ==========================================
@@ -155,6 +167,9 @@ public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
 
             // Restore stock
             await RestoreStockAsync(order);
+
+            // ✅ Refund coupon usage (so user can use again)
+            await RefundCouponUsageAsync(order);
 
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitTransactionAsync();
@@ -219,7 +234,7 @@ public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
             TotalDiscount = totals.TotalDiscount,
             ShippingFee = totals.ShippingFee,
             TaxAmount = totals.TaxAmount,
-            CouponCode = dto.CouponCode,
+            CouponCode = cart.CouponCode ?? dto.CouponCode,
             CouponDiscount = totals.CouponDiscount,
             Total = totals.Total,
 
@@ -278,6 +293,68 @@ public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
         }
     }
 
+    // ==========================================
+    // ✅ TRACK COUPON USAGE (After order placed)
+    // ==========================================
+    private async Task TrackCouponUsageAsync(Guid userId, Cart cart, api.Domain.Entities.Order order)
+    {
+        // Only track if coupon was applied
+        if (!cart.CouponId.HasValue || cart.CouponDiscount <= 0)
+        {
+            return;
+        }
+
+        // Create usage record
+        var couponUsage = new CouponUsage
+        {
+            TenantId = _tenantContext.TenantId!.Value,
+            CouponId = cart.CouponId.Value,
+            UserId = userId,
+            OrderId = order.Id,
+            DiscountAmount = cart.CouponDiscount
+        };
+
+        await _unitOfWork.CouponUsages.AddAsync(couponUsage);
+
+        // Increment total usage count on coupon
+        var coupon = await _unitOfWork.Coupons.GetByIdAsync(cart.CouponId.Value);
+        if (coupon != null)
+        {
+            coupon.UsageCount++;
+            _unitOfWork.Coupons.Update(coupon);
+        }
+    }
+
+    // ==========================================
+    // ✅ REFUND COUPON USAGE (On order cancel)
+    // Soft delete usage so user can use coupon again
+    // ==========================================
+    private async Task RefundCouponUsageAsync(api.Domain.Entities.Order order)
+    {
+        // Skip if no coupon was used
+        if (string.IsNullOrEmpty(order.CouponCode) || order.CouponDiscount <= 0)
+        {
+            return;
+        }
+
+        // Find usage record for this order
+        var usages = await _unitOfWork.CouponUsages
+            .FindAsync(u => u.OrderId == order.Id);
+
+        foreach (var usage in usages)
+        {
+            _unitOfWork.CouponUsages.SoftDelete(usage);
+
+            // Decrement coupon usage count
+            var coupon = await _unitOfWork.Coupons.GetByIdAsync(usage.CouponId);
+            if (coupon != null && coupon.UsageCount > 0)
+            {
+                coupon.UsageCount--;
+                _unitOfWork.Coupons.Update(coupon);
+            }
+        }
+    }
+
     // Clear cart after successful order
     private Task ClearCartAsync(Cart cart, List<CartItem> cartItems)
     {
@@ -287,7 +364,10 @@ public async Task<PaginatedOrdersDto> GetUserOrdersAsync(
             _unitOfWork.Carts.UpdateCartItem(item);
         }
 
+        // Clear coupon completely
         cart.CouponCode = null;
+        cart.CouponId = null;
+        cart.CouponDiscount = 0;
         _unitOfWork.Carts.Update(cart);
         return Task.CompletedTask;
     }

@@ -76,3 +76,31 @@ public class ProfileUpdatedDto
     public string Role { get; set; } = string.Empty;
     public bool IsVerified { get; set; }
 }
+
+
+// ==========================================
+// PASSWORD RESET DTOs
+// ==========================================
+
+// User sends email to request reset
+public class ForgotPasswordDto
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+// User sends token + new password
+public class ResetPasswordDto
+{
+    public string Token { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+// API returns this after forgot password
+public class ForgotPasswordResponseDto
+{
+    public string Message { get; set; } = string.Empty;
+    // DEV ONLY: Include token in response for testing
+    // TODO: Remove in production when email is set up
+    public string? ResetToken { get; set; }
+    public string? ResetUrl { get; set; }
+}

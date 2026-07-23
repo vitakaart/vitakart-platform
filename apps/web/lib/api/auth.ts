@@ -7,6 +7,11 @@ import type {
   LoginInput,
   RegisterInput,
   User,
+  UpdateProfileInput,
+  ProfileUpdatedResponse,
+  ForgotPasswordInput,
+  ForgotPasswordResponse, 
+  ResetPasswordInput,
 } from "@/types/api";
 
 export const authApi = {
@@ -38,6 +43,22 @@ export const authApi = {
     );
     return response.data;
   },
+  // Request password reset link
+  forgotPassword: async (
+    data: ForgotPasswordInput,
+  ): Promise<ForgotPasswordResponse> => {
+    const response = await apiClient.post<ForgotPasswordResponse>(
+      "/auth/forgot-password",
+      data,
+    );
+    return response.data;
+  },
+
+  // Reset password with token
+  resetPassword: async (data: ResetPasswordInput): Promise<void> => {
+    await apiClient.post("/auth/reset-password", data);
+  },
+
   // Logout (revoke refresh token)
   logout: async (refreshToken: string): Promise<void> => {
     await apiClient.post("/auth/logout", { refreshToken });

@@ -1,5 +1,5 @@
 // File: apps/web/app/forgot-password/page.tsx
-// Forgot password page — sends reset link to email
+// Forgot password page — REAL API integrated
 
 "use client";
 
@@ -7,12 +7,21 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Copy,
+  Loader2,
+  Mail,
+} from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { FormInput } from "@/components/auth/form-input";
+import { authApi } from "@/lib/api/auth";
+import { getErrorMessage } from "@/lib/api/client";
 import { ROUTES } from "@/lib/constants/routes";
 
 const forgotPasswordSchema = z.object({
@@ -28,6 +37,7 @@ export default function ForgotPasswordPage() {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [sentEmail, setSentEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -44,35 +54,47 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Add backend API call when ready
-      // await authApi.forgotPassword(data.email);
-      
-      // Placeholder — simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await authApi.forgotPassword({ email: data.email });
 
       setSentEmail(data.email);
       setIsEmailSent(true);
+
+      // DEV MODE: If backend returned reset URL, show it
+      if (response.resetUrl) {
+        setDevResetUrl(response.resetUrl);
+      }
+
       toast.success("Reset link sent to your email");
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(getErrorMessage(error));
       console.error("Forgot password error:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Success screen
+  const handleCopyUrl = () => {
+    if (devResetUrl) {
+      navigator.clipboard.writeText(devResetUrl);
+      toast.success("URL copied to clipboard");
+    }
+  };
+
+  // ==========================================
+  // SUCCESS SCREEN
+  // ==========================================
   if (isEmailSent) {
     return (
       <AuthLayout
+        mode="login"
         title="Check Your Email"
         subtitle="We've sent password reset instructions"
       >
         <div className="space-y-6">
-          {/* Success illustration */}
+          {/* Success icon */}
           <div className="flex justify-center">
-            <div className="w-20 h-20 bg-success-100 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-10 h-10 text-success-600" />
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center animate-scale-in">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
           </div>
 
@@ -97,12 +119,58 @@ export default function ForgotPasswordPage() {
               <li>Create a new password</li>
               <li>Login with your new password</li>
             </ol>
+            <p className="text-xs text-gray-500 mt-2">
+              ⏰ Link expires in 15 minutes
+            </p>
           </div>
+
+          {/* ==========================================
+              DEV MODE: Show reset URL for testing
+              TODO: Remove when email service is ready
+              ========================================== */}
+          {devResetUrl && (
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-yellow-600 text-lg">⚠️</span>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-yellow-900">
+                    DEVELOPMENT MODE
+                  </p>
+                  <p className="text-xs text-yellow-800 mt-0.5">
+                    Email service not configured. Use this link to test:
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-2 border border-yellow-200 flex items-center gap-2 mt-2">
+                <code className="text-[10px] text-gray-700 break-all flex-1 font-mono">
+                  {devResetUrl}
+                </code>
+                <button
+                  onClick={handleCopyUrl}
+                  className="shrink-0 p-1.5 hover:bg-yellow-100 rounded transition-colors"
+                  title="Copy link"
+                >
+                  <Copy className="w-3.5 h-3.5 text-yellow-700" />
+                </button>
+              </div>
+
+              <a
+                href={devResetUrl}
+                className="mt-2 block text-center text-xs font-bold text-yellow-900 bg-yellow-200 hover:bg-yellow-300 py-2 rounded-lg transition-colors"
+              >
+                Open Reset Link →
+              </a>
+            </div>
+          )}
 
           <p className="text-xs text-gray-500 text-center">
             Didn&apos;t receive the email? Check your spam folder or{" "}
             <button
-              onClick={() => setIsEmailSent(false)}
+              onClick={() => {
+                setIsEmailSent(false);
+                setDevResetUrl(null);
+              }}
               className="text-primary-600 hover:text-primary-700 font-medium hover:underline"
             >
               try again
@@ -110,11 +178,7 @@ export default function ForgotPasswordPage() {
           </p>
 
           {/* Back to login */}
-          <Button
-            asChild
-            variant="outline"
-            className="w-full h-11"
-          >
+          <Button asChild variant="outline" className="w-full h-11">
             <Link href={ROUTES.LOGIN}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Login
@@ -125,9 +189,12 @@ export default function ForgotPasswordPage() {
     );
   }
 
-  // Form screen
+  // ==========================================
+  // FORM SCREEN
+  // ==========================================
   return (
     <AuthLayout
+      mode="login"
       title="Forgot Password?"
       subtitle="Enter your email to receive a password reset link"
     >

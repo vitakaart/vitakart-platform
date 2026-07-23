@@ -147,6 +147,8 @@ public class AuthService : IAuthService
                 $"Invalid email or password. {attemptsLeft} attempt(s) remaining before lockout.");
         }
 
+
+
         // ==========================================
         // SUCCESSFUL LOGIN — Reset counters
         // ==========================================
@@ -359,6 +361,154 @@ public class AuthService : IAuthService
     }
 
 
+
+    // ==========================================
+    // FORGOT PASSWORD
+    // ==========================================
+    public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(string email, string? ipAddress)
+    {
+        if (!_tenantContext.IsResolved)
+        {
+            throw new ValidationException("Tenant not resolved");
+        }
+
+        var tenantId = _tenantContext.TenantId!.Value;
+
+        var user = await _unitOfWork.Users.GetByEmailAndTenantAsync(email, tenantId);
+
+        // Security: Don't reveal if email exists or not
+        // Always return same success message
+        var response = new ForgotPasswordResponseDto
+        {
+            Message = "If an account with this email exists, you will receive a password reset link shortly."
+        };
+
+        if (user == null || !user.IsActive)
+        {
+            // Silent fail — don't leak info
+            return response;
+        }
+
+        // Invalidate previous unused tokens
+        await _unitOfWork.PasswordResetTokens.InvalidateUserTokensAsync(user.Id);
+
+        // Generate secure token
+        var token = GenerateResetToken();
+
+        // Save token (15 min expiry)
+        var resetToken = new PasswordResetToken
+        {
+            TenantId = tenantId,
+            UserId = user.Id,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            IpAddress = ipAddress
+        };
+
+        await _unitOfWork.PasswordResetTokens.AddAsync(resetToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        // ==========================================
+        // DEV MODE: Return token in response + log
+        // TODO: Replace with real email in production
+        // ==========================================
+        var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL")
+                       ?? "http://localhost:3000";
+        var resetUrl = $"{frontendUrl}/reset-password?token={token}";
+
+        // Console log for developer
+        Console.WriteLine("");
+        Console.WriteLine("═══════════════════════════════════════════════════════");
+        Console.WriteLine("🔐 PASSWORD RESET REQUEST");
+        Console.WriteLine("═══════════════════════════════════════════════════════");
+        Console.WriteLine($"👤 User: {user.Email}");
+        Console.WriteLine($"🔑 Token: {token}");
+        Console.WriteLine($"🔗 Reset URL: {resetUrl}");
+        Console.WriteLine($"⏰ Expires: {resetToken.ExpiresAt:g} (15 min)");
+        Console.WriteLine("═══════════════════════════════════════════════════════");
+        Console.WriteLine("");
+
+        // In development, return the token/URL for easy testing
+        // Remove these lines when email service is set up:
+        response.ResetToken = token;
+        response.ResetUrl = resetUrl;
+
+        // TODO: Send email here when service is ready
+        // await _emailService.SendPasswordResetEmailAsync(user.Email, resetUrl);
+
+        return response;
+    }
+
+    // ==========================================
+    // RESET PASSWORD
+    // ==========================================
+    public async Task ResetPasswordAsync(string token, string newPassword)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new ValidationException("Reset token is required");
+        }
+
+        // Validate password strength (same as register)
+        if (newPassword.Length < 8)
+        {
+            throw new ValidationException("Password must be at least 8 characters");
+        }
+
+        // Find token
+        var resetToken = await _unitOfWork.PasswordResetTokens.GetByTokenAsync(token);
+
+        if (resetToken == null)
+        {
+            throw new ValidationException("Invalid reset token");
+        }
+
+        if (resetToken.IsUsed)
+        {
+            throw new ValidationException("This reset link has already been used");
+        }
+
+        if (resetToken.ExpiresAt <= DateTime.UtcNow)
+        {
+            throw new ValidationException("This reset link has expired. Please request a new one.");
+        }
+
+        if (resetToken.User == null || !resetToken.User.IsActive || resetToken.User.IsDeleted)
+        {
+            throw new ValidationException("User account not found or inactive");
+        }
+
+        // Update password
+        resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        resetToken.User.FailedLoginAttempts = 0;  // Reset lockout
+        resetToken.User.LockedUntil = null;
+
+        // Mark token as used
+        resetToken.IsUsed = true;
+        resetToken.UsedAt = DateTime.UtcNow;
+
+        _unitOfWork.Users.Update(resetToken.User);
+        _unitOfWork.PasswordResetTokens.Update(resetToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Log for security
+        Console.WriteLine($"✅ Password reset successful for user: {resetToken.User.Email}");
+    }
+
+    // ==========================================
+    // PRIVATE HELPER — Generate secure token
+    // ==========================================
+    private static string GenerateResetToken()
+    {
+        // 64 chars alphanumeric — cryptographically secure
+        var bytes = new byte[48];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+        return Convert.ToBase64String(bytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", "");
+    }
 
     // ==========================================
     // PRIVATE HELPERS

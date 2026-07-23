@@ -34,7 +34,7 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
-  phone?: string | null;  // ← ADD this
+  phone?: string | null; // ← ADD this
   role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
   isVerified: boolean;
 }
@@ -114,6 +114,8 @@ export interface Product {
   metaTitle: string | null;
   metaDescription: string | null;
   metaKeywords: string | null;
+  averageRating: number;
+  totalReviews: number;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -133,7 +135,6 @@ export interface ProductQuery {
   sortBy?: "name" | "price" | "newest" | "oldest";
   sortOrder?: "asc" | "desc";
 }
-
 
 // ==========================================
 // CART TYPES
@@ -160,6 +161,7 @@ export interface Cart {
   id: string;
   userId: string;
   couponCode: string | null;
+  couponDiscount: number;
   items: CartItem[];
   totalItems: number;
   uniqueItemsCount: number;
@@ -179,7 +181,6 @@ export interface AddToCartInput {
 export interface UpdateCartItemInput {
   quantity: number;
 }
-
 
 // ==========================================
 // ORDER TYPES
@@ -317,11 +318,9 @@ export interface CancelOrderInput {
   reason?: string;
 }
 
-
 // ==========================================
 // UPDATE PROFILE TYPES
 // ==========================================
-
 
 // Update profile DTO
 export interface UpdateProfileInput {
@@ -338,8 +337,6 @@ export interface ProfileUpdatedResponse {
   role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
   isVerified: boolean;
 }
-
-
 
 // ==========================================
 // ADDRESS TYPES
@@ -398,7 +395,6 @@ export interface UpdateAddressInput {
   type: AddressType;
 }
 
-
 // ==========================================
 // WISHLIST TYPES
 // ==========================================
@@ -438,4 +434,138 @@ export interface WishlistCountResponse {
 // Add/Toggle input
 export interface WishlistActionInput {
   productId: string;
+}
+
+// ==========================================
+// REVIEWS & RATINGS TYPES
+// ==========================================
+
+// Single review
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  userInitial: string;
+  rating: number;
+  title: string | null;
+  comment: string;
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+// Product review stats
+export interface ProductReviewStats {
+  averageRating: number;
+  totalReviews: number;
+  ratingBreakdown: Record<number, number>;
+  ratingPercentage: Record<number, number>;
+}
+
+// Paginated reviews
+export interface PaginatedReviews {
+  reviews: Review[];
+  stats: ProductReviewStats;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+// Eligibility check
+export interface ReviewEligibility {
+  canReview: boolean;
+  hasReviewed: boolean;
+  hasPurchased: boolean;
+  reason: string | null;
+  existingReview: Review | null;
+}
+
+// Create review input
+export interface CreateReviewInput {
+  productId: string;
+  rating: number;
+  title?: string;
+  comment: string;
+}
+
+// Update review input
+export interface UpdateReviewInput {
+  rating: number;
+  title?: string;
+  comment: string;
+}
+
+// Query params
+export interface ReviewQueryParams {
+  page?: number;
+  pageSize?: number;
+  rating?: number;
+}
+
+// ==========================================
+// PASSWORD RESET TYPES
+// ==========================================
+
+// Forgot password input
+export interface ForgotPasswordInput {
+  email: string;
+}
+
+// Forgot password response
+export interface ForgotPasswordResponse {
+  message: string;
+  // DEV ONLY (remove when email is set up)
+  resetToken?: string;
+  resetUrl?: string;
+}
+
+// Reset password input
+export interface ResetPasswordInput {
+  token: string;
+  newPassword: string;
+}
+
+// ==========================================
+// COUPON TYPES
+// ==========================================
+
+// Coupon type enum
+export type CouponDiscountType = "Percentage" | "Fixed";
+
+// Public coupon info
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  type: CouponDiscountType;
+  value: number;
+  maxDiscount: number | null;
+  minOrderAmount: number;
+  validUntil: string | null;
+  displayText: string; // "10% OFF up to ₹100"
+  conditionText: string; // "Min order ₹500 • Expires 15 Dec"
+
+   // User usage info
+  userUsageCount: number;
+  perUserLimit: number | null;
+  isUsedByUser: boolean;
+  canUseAgain: boolean;
+}
+
+// Validation result
+export interface CouponValidation {
+  isValid: boolean;
+  message: string;
+  discountAmount: number;
+  coupon: Coupon | null;
+}
+
+// Apply coupon input
+export interface ApplyCouponInput {
+  code: string;
 }

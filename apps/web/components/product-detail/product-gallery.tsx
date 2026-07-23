@@ -37,7 +37,7 @@ export function ProductGallery({ images, productName, isBestSeller = false }: Pr
           src={displayImages[selectedImage]}
           alt={productName}
           fill
-          className="object-contain p-6 hover:scale-105 transition-transform duration-500"
+          className="object-contain  hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, 40vw"
           priority
         />
@@ -45,7 +45,7 @@ export function ProductGallery({ images, productName, isBestSeller = false }: Pr
 
       {/* Thumbnails */}
       {displayImages.length > 1 && (
-        <div className="grid grid-cols-6 gap-2 md:grid-cols-8">
+        <div className="grid grid-cols-4 gap-2 md:grid-cols-8">
           {displayImages.slice(0, 4).map((img, i) => (
             <button
               key={i}
@@ -61,7 +61,7 @@ export function ProductGallery({ images, productName, isBestSeller = false }: Pr
                 src={img}
                 alt={`${productName} view ${i + 1}`}
                 fill
-                className="object-contain p-2"
+                className="object-cover "
                 sizes="150px"
               />
             </button>

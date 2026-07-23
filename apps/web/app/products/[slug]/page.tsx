@@ -132,19 +132,19 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           <ProductTabs product={product} />
         </div>
 
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <AyurvedaBanner />
-        </div>
+        </div> */}
 
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <FrequentlyBoughtTogether
             mainProduct={product}
             bundleProducts={bundleProducts}
           />
-        </div>
+        </div> */}
 
-        <div className="mb-8">
-          <ReviewsSection />
+        <div id="reviews-section" className="mb-8 scroll-mt-24">
+          <ReviewsSection productId={product.id} productName={product.name} />
         </div>
 
         <div className="mb-8">

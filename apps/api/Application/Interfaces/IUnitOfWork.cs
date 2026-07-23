@@ -17,6 +17,12 @@ public interface IUnitOfWork
     IAddressRepository Addresses { get; }
     IWishlistRepository Wishlists { get; }
 
+    IReviewRepository Reviews { get; }
+    IPasswordResetTokenRepository PasswordResetTokens { get; }
+
+    ICouponRepository Coupons { get; }
+ICouponUsageRepository CouponUsages { get; }
+
     // Save all changes in one transaction
     Task<int> SaveChangesAsync();
 

@@ -75,6 +75,11 @@ public class ProductDto
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
     public string? MetaKeywords { get; set; }
+    
+    //Reviews & Ratings
+    public decimal AverageRating { get; set; }
+    public int TotalReviews { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

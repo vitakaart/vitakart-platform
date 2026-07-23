@@ -27,6 +27,12 @@ public class AppDbContext : DbContext
 
     public DbSet<Wishlist> Wishlists { get; set; }
 
+    public DbSet<Review> Reviews { get; set; }
+
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<CouponUsage> CouponUsages { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -68,6 +74,9 @@ public class AppDbContext : DbContext
 
             entity.Property(p => p.Price).HasPrecision(10, 2);
             entity.Property(p => p.DiscountPrice).HasPrecision(10, 2);
+            // Review aggregates precision
+            entity.Property(p => p.AverageRating).HasPrecision(3, 2);
+
 
             entity.HasOne(p => p.Category)
                 .WithMany()
@@ -132,6 +141,14 @@ public class AppDbContext : DbContext
                 .WithOne(i => i.Cart)
                 .HasForeignKey(i => i.CartId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Coupon relationship
+            entity.Property(c => c.CouponDiscount).HasPrecision(10, 2);
+
+            entity.HasOne(c => c.Coupon)
+                .WithMany()
+                .HasForeignKey(c => c.CouponId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // CartItem configuration
@@ -449,6 +466,157 @@ public class AppDbContext : DbContext
             entity.HasOne(w => w.Tenant)
                 .WithMany()
                 .HasForeignKey(w => w.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // REVIEW CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+
+            // One review per user per product
+            entity.HasIndex(r => new { r.UserId, r.ProductId })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+
+            // Fast queries
+            entity.HasIndex(r => new { r.TenantId, r.ProductId });
+            entity.HasIndex(r => r.CreatedAt);
+
+            // Rating check (1-5) — DB level constraint
+            entity.Property(r => r.Rating)
+                .IsRequired();
+
+            // Title
+            entity.Property(r => r.Title)
+                .HasMaxLength(200);
+
+            // Comment
+            entity.Property(r => r.Comment)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            // Relations
+            entity.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Tenant)
+                .WithMany()
+                .HasForeignKey(r => r.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // PASSWORD RESET TOKEN CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Token)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.Property(t => t.IpAddress)
+                .HasMaxLength(45);
+
+            // Unique token
+            entity.HasIndex(t => t.Token).IsUnique();
+
+            // Fast lookup
+            entity.HasIndex(t => new { t.UserId, t.IsUsed });
+            entity.HasIndex(t => t.ExpiresAt);
+
+            // Relations
+            entity.HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(t => t.Tenant)
+                .WithMany()
+                .HasForeignKey(t => t.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // COUPON CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<Coupon>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+
+            entity.Property(c => c.Code)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(c => c.Description)
+                .HasMaxLength(500);
+
+            entity.Property(c => c.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(c => c.Value).HasPrecision(10, 2);
+            entity.Property(c => c.MaxDiscount).HasPrecision(10, 2);
+            entity.Property(c => c.MinOrderAmount).HasPrecision(10, 2);
+
+            // Unique code per tenant
+            entity.HasIndex(c => new { c.Code, c.TenantId })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+
+            // Fast queries
+            entity.HasIndex(c => new { c.TenantId, c.IsActive });
+            entity.HasIndex(c => c.ValidUntil);
+
+            entity.HasOne(c => c.Tenant)
+                .WithMany()
+                .HasForeignKey(c => c.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // COUPON USAGE CONFIGURATION
+        // ==========================================
+        modelBuilder.Entity<CouponUsage>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+
+            entity.Property(u => u.DiscountAmount).HasPrecision(10, 2);
+
+            // Fast lookups
+            entity.HasIndex(u => new { u.CouponId, u.UserId });
+            entity.HasIndex(u => new { u.TenantId, u.UserId });
+
+            entity.HasOne(u => u.Coupon)
+                .WithMany()
+                .HasForeignKey(u => u.CouponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(u => u.Order)
+                .WithMany()
+                .HasForeignKey(u => u.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(u => u.Tenant)
+                .WithMany()
+                .HasForeignKey(u => u.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

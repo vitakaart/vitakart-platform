@@ -9,6 +9,7 @@ public class CartDto
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string? CouponCode { get; set; }
+    public decimal CouponDiscount { get; set; }
     public List<CartItemDto> Items { get; set; } = new();
     public int TotalItems { get; set; }
     public int UniqueItemsCount { get; set; }
@@ -52,8 +53,3 @@ public class UpdateCartItemDto
     public int Quantity { get; set; }
 }
 
-// Apply coupon (future)
-public class ApplyCouponDto
-{
-    public string CouponCode { get; set; } = string.Empty;
-}

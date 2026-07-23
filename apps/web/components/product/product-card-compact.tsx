@@ -82,12 +82,31 @@ export function ProductCardCompact({ product, index = 0 }: ProductCardCompactPro
           {product.name}
         </div>
 
-        <div className="mt-1.5 flex items-center gap-0.5 text-yellow-500">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <Star key={s} size={10} fill="currentColor" />
-          ))}
-          <span className="text-[10px] text-[#6B665D] ml-1">4.7 (1.2k)</span>
-        </div>
+        {/* Rating */}
+        {product.totalReviews > 0 ? (
+          <div className="mt-1.5 flex items-center gap-0.5">
+            <div className="flex items-center gap-0.5 text-yellow-500">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  size={10}
+                  className={
+                    s <= Math.round(product.averageRating)
+                      ? "fill-yellow-500 text-yellow-500"
+                      : "fill-transparent text-stone-300"
+                  }
+                />
+              ))}
+            </div>
+            <span className="text-[10px] text-[#6B665D] ml-1">
+              {product.averageRating.toFixed(1)} ({product.totalReviews})
+            </span>
+          </div>
+        ) : (
+          <div className="mt-1.5">
+            <span className="text-[10px] text-stone-400">No reviews yet</span>
+          </div>
+        )}
 
         <div className="mt-2 flex items-center justify-between gap-2">
           <div className="flex flex-row gap-2 items-center">

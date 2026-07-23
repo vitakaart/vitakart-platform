@@ -1,19 +1,20 @@
 // File: apps/web/app/cart/page.tsx
-// Full cart page
+// Full cart page with coupon integration
 
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Trash2, Loader2, Tag } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { CartItem } from "@/components/cart/cart-item";
 import { ClearCartModal } from "@/components/cart/clear-cart-modal";
-
 import { OrderSummary } from "@/components/cart/order-summary";
 import { EmptyCart } from "@/components/cart/empty-cart";
+import { CouponSection } from "@/components/coupons/coupon-section";  // ← ADD
 import { useCart } from "@/lib/hooks/use-cart";
 import { ROUTES } from "@/lib/constants/routes";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ function CartContent() {
   const handleClearCart = () => {
     clearCart(undefined, {
       onSuccess: () => {
-        setShowClearModal(false);  // ← Close modal only after success
+        setShowClearModal(false);
       },
     });
   };
@@ -65,8 +66,8 @@ function CartContent() {
               variant="outline"
               className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
             >
-              <Trash2 className="w-4 h-4 " />
-              Clear All
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden md:inline ml-1">Clear All</span>
             </Button>
           )}
         </div>
@@ -89,6 +90,25 @@ function CartContent() {
               {cart.items.map((item) => (
                 <CartItem key={item.id} item={item} />
               ))}
+
+              {/* ✅ COUPON SECTION */}
+              <div className="bg-[#FFFDF8] rounded-2xl border border-[#E9E1D2] p-4 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Tag className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#0A0A0A]">
+                      Apply Coupon
+                    </h3>
+                    <p className="text-[11px] text-[#6B665D]">
+                      Save more with promo codes
+                    </p>
+                  </div>
+                </div>
+
+                <CouponSection appliedCode={cart.couponCode} />
+              </div>
 
               {/* Continue Shopping */}
               <Link
@@ -113,10 +133,9 @@ function CartContent() {
         isOpen={showClearModal}
         itemCount={cart?.totalItems ?? 0}
         onClose={() => setShowClearModal(false)}
-        onConfirm={handleClearCart}  // ← Just call it
+        onConfirm={handleClearCart}
         isClearing={isClearing}
       />
-
     </MainLayout>
   );
 }

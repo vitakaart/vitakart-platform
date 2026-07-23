@@ -1,4 +1,3 @@
-
 // File: apps/web/lib/hooks/use-orders.ts
 // Orders data + mutations hook
 
@@ -79,6 +78,9 @@ export function useCreateOrder() {
       // Invalidate orders list
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
 
+      // Invalidate coupons (usage count changed)
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+
       // Show success toast
       toast.success("Order placed successfully!", {
         description: `Order #${order.orderNumber}`,
@@ -108,11 +110,11 @@ export function useCancelOrder() {
       data?: CancelOrderInput;
     }) => ordersApi.cancelOrder(orderId, data),
     onSuccess: (order) => {
-      // Update specific order
       queryClient.setQueryData([...ORDERS_QUERY_KEY, order.id], order);
-
-      // Invalidate orders list
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+
+      // ✅ Invalidate coupons (usage refunded)
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
 
       toast.success("Order cancelled", {
         description: "Stock has been restored",
