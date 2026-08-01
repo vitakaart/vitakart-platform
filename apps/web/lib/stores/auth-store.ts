@@ -42,11 +42,11 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== "undefined") {
           localStorage.setItem(
             APP_CONFIG.STORAGE_KEYS.ACCESS_TOKEN,
-            accessToken
+            accessToken,
           );
           localStorage.setItem(
             APP_CONFIG.STORAGE_KEYS.REFRESH_TOKEN,
-            refreshToken
+            refreshToken,
           );
         }
 
@@ -60,7 +60,25 @@ export const useAuthStore = create<AuthState>()(
 
       // Update user info only (e.g., profile update)
       setUser: (user) => {
+        // Update state
         set({ user });
+
+        // Force save to localStorage immediately (persist can be delayed)
+        if (typeof window !== "undefined") {
+          try {
+            const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.USER);
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              parsed.state = { ...parsed.state, user };
+              localStorage.setItem(
+                APP_CONFIG.STORAGE_KEYS.USER,
+                JSON.stringify(parsed),
+              );
+            }
+          } catch (error) {
+            console.error("Failed to persist user:", error);
+          }
+        }
       },
 
       // Clear all auth data (logout)
@@ -98,8 +116,8 @@ export const useAuthStore = create<AuthState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
       },
-    }
-  )
+    },
+  ),
 );
 
 // ==========================================

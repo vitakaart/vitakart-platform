@@ -1,9 +1,10 @@
 // File: apps/web/lib/hooks/use-auth.ts
-// Fixed: Better error handling + loading state reset
+// Auto-fetch fresh user on mount + all auth mutations
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useEffect } from "react";
 import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -12,11 +13,39 @@ import type { LoginInput, RegisterInput } from "@/types/api";
 
 export function useAuth() {
   const router = useRouter();
-  const { setAuth, clearAuth, refreshToken, user, isAuthenticated } =
-    useAuthStore();
+  const queryClient = useQueryClient();
+  const {
+    setAuth,
+    setUser,
+    clearAuth,
+    refreshToken,
+    user,
+    isAuthenticated,
+  } = useAuthStore();
 
   // ==========================================
-  // LOGIN MUTATION
+  // ✅ AUTO-FETCH FRESH USER DATA
+  // Runs on mount + when authenticated
+  // Ensures user data is ALWAYS fresh from backend
+  // ==========================================
+  const { data: freshUser } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => authApi.getCurrentUser(),
+    enabled: isAuthenticated && !!user,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true, // Refetch when tab gains focus
+    refetchOnMount: true, // Always refetch on mount
+  });
+
+  // ✅ Update Zustand store when fresh data arrives
+  useEffect(() => {
+    if (freshUser) {
+      setUser(freshUser);
+    }
+  }, [freshUser, setUser]);
+
+  // ==========================================
+  // LOGIN
   // ==========================================
   const loginMutation = useMutation({
     mutationFn: (data: LoginInput) => authApi.login(data),
@@ -26,18 +55,19 @@ export function useAuth() {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       });
+      // Invalidate auth queries to fetch fresh
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
       toast.success(`Welcome back, ${data.user.fullName}!`);
       router.push(ROUTES.HOME);
     },
     onError: (error) => {
       const message = getErrorMessage(error);
       toast.error(message);
-      console.error("Login error:", error);
     },
   });
 
   // ==========================================
-  // REGISTER MUTATION
+  // REGISTER
   // ==========================================
   const registerMutation = useMutation({
     mutationFn: (data: RegisterInput) => authApi.register(data),
@@ -47,18 +77,18 @@ export function useAuth() {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       });
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
       toast.success(`Welcome to Vitakart, ${data.user.fullName}!`);
       router.push(ROUTES.HOME);
     },
     onError: (error) => {
       const message = getErrorMessage(error);
       toast.error(message);
-      console.error("Register error:", error);
     },
   });
 
   // ==========================================
-  // LOGOUT MUTATION
+  // LOGOUT
   // ==========================================
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -66,34 +96,28 @@ export function useAuth() {
         try {
           await authApi.logout(refreshToken);
         } catch (error) {
-          // Silent fail — still logout locally
           console.error("Logout API error:", error);
         }
       }
     },
     onSettled: () => {
       clearAuth();
+      queryClient.clear();
       toast.success("Logged out successfully");
       router.push(ROUTES.HOME);
     },
   });
 
   return {
-    // State
-    user,
+    // ✅ Return fresh user if available, else Zustand user
+    user: freshUser || user,
     isAuthenticated,
-
-    // Actions
     login: loginMutation.mutate,
     register: registerMutation.mutate,
     logout: logoutMutation.mutate,
-
-    // Loading states
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
-
-    // Error states (bonus — for debugging)
     loginError: loginMutation.error,
     registerError: registerMutation.error,
   };

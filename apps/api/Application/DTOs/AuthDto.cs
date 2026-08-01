@@ -35,6 +35,8 @@ public class UserInfoDto
     public Guid Id { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public string? ProfileImage { get; set; }
     public string Role { get; set; } = string.Empty;
     public bool IsVerified { get; set; }
 }
@@ -64,6 +66,7 @@ public class UpdateProfileDto
 {
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
+    public string? ProfileImage { get; set; }
 }
 
 // API returns this after profile update
@@ -73,6 +76,7 @@ public class ProfileUpdatedDto
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
+    public string? ProfileImage { get; set; }  // ← ADD
     public string Role { get; set; } = string.Empty;
     public bool IsVerified { get; set; }
 }

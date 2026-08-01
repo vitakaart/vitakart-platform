@@ -22,14 +22,14 @@ export default function HomePage() {
     <MainLayout>
       <main className="mx-auto flex container-app flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
         <HeroSlider />
-        <CategoryGrid />
+        <CategoryGrid /> {/* this is come from data fetch */}
         {/* <FeaturedProducts /> */}
         {/* <DealBanner /> */}
         <BestSellers />
         <SecureDelivery />
-        <VitaminsSection />
-        <AyurvedaSection />
-        <DiscountCode />
+        <VitaminsSection />{/* this is come from data fetch */}
+        <AyurvedaSection />{/* this is come from data fetch */}
+        <DiscountCode />{/* this is come from data fetch */}
         <TrustBadges />
         <BrandStory />
         {/* <PartnerBrands /> */}

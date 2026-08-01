@@ -232,7 +232,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </aside>
 
           <div>
-            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-20 z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-4 md:mx-0 md:px-0 p-2 border-b border-[#E9E1D2] md:border-0">
+            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-18  z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-3 rounded-xl sticky  md:mx-0 shadow-sm border-b border-[#E9E1D2] md:border-0">
               <div className="text-sm">
                 <span className="font-bold text-[#0A0A0A]">
                   {filteredProducts.length}

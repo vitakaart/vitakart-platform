@@ -1,7 +1,7 @@
 // File: apps/web/lib/hooks/use-profile.ts
-// Custom hook for profile update
+// Profile update with proper cache invalidation
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/api/client";
@@ -9,25 +9,31 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import type { UpdateProfileInput } from "@/types/api";
 
 export function useUpdateProfile() {
-  const { user, setUser } = useAuthStore();
+  const queryClient = useQueryClient();
+  const setUser = useAuthStore((state) => state.setUser);
+  const user = useAuthStore((state) => state.user);
 
   const updateProfileMutation = useMutation({
     mutationFn: (data: UpdateProfileInput) => authApi.updateProfile(data),
-    onSuccess: (data) => {
-      // Update local auth store with new user data
+    onSuccess: (updatedUser) => {
+      // ✅ 1. Update Zustand store immediately
       if (user) {
-        setUser({
+        const newUser = {
           ...user,
-          fullName: data.fullName,
-          phone: data.phone,
-        });
+          fullName: updatedUser.fullName,
+          phone: updatedUser.phone,
+          profileImage: updatedUser.profileImage,
+        };
+        setUser(newUser);
       }
+
+      // ✅ 2. Invalidate auth query to refetch fresh
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+
       toast.success("Profile updated successfully!");
     },
     onError: (error) => {
-      const message = getErrorMessage(error);
-      toast.error(message);
-      console.error("Update profile error:", error);
+      toast.error(getErrorMessage(error));
     },
   });
 

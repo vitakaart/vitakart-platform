@@ -17,12 +17,12 @@ export function MainLayout({
   hideBottomNav = false,
 }: MainLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white ">
       {/* Navbar */}
       <Navbar />
 
       {/* Main Content — with bottom padding on mobile for bottom nav */}
-      <main className="flex-1 pb-0 md:pb-0">{children}</main>
+      <main className="flex-1 pb-0 md:pb-0 !bg-[#6161611f] ">{children}</main>
 
       {/* Footer — desktop only */}
       {!hideFooter && (

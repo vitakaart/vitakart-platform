@@ -10,10 +10,15 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "randomuser.me",
       },
         {
         protocol: "https",
-        hostname: "randomuser.me",
+        hostname: "imgs.search.brave.com",
       },
     ],
   },

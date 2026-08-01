@@ -27,7 +27,6 @@ out/
 build
 dist
 
-
 # Debug
 npm-debug.log*
 yarn-debug.log*
@@ -36,3 +35,17 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# .NET Backend
+apps/api/**/bin/
+apps/api/**/obj/
+apps/api/**/*.user
+apps/api/appsettings.Development.json
+
+# Rider / VS / VSCode
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates

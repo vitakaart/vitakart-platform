@@ -34,7 +34,9 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
-  phone?: string | null; // ← ADD this
+  phone?: string | null;
+  
+  profileImage?: string | null;
   role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
   isVerified: boolean;
 }
@@ -326,6 +328,7 @@ export interface CancelOrderInput {
 export interface UpdateProfileInput {
   fullName: string;
   phone?: string;
+  profileImage?: string;
 }
 
 // Profile updated response
@@ -334,6 +337,7 @@ export interface ProfileUpdatedResponse {
   fullName: string;
   email: string;
   phone: string | null;
+  profileImage: string | null;
   role: "Customer" | "Vendor" | "Admin" | "SuperAdmin";
   isVerified: boolean;
 }
@@ -550,7 +554,7 @@ export interface Coupon {
   displayText: string; // "10% OFF up to ₹100"
   conditionText: string; // "Min order ₹500 • Expires 15 Dec"
 
-   // User usage info
+  // User usage info
   userUsageCount: number;
   perUserLimit: number | null;
   isUsedByUser: boolean;
@@ -568,4 +572,20 @@ export interface CouponValidation {
 // Apply coupon input
 export interface ApplyCouponInput {
   code: string;
+}
+
+// ==========================================
+// IMAGE UPLOAD TYPES
+// ==========================================
+
+export interface ImageUploadResponse {
+  success: boolean;
+  publicId: string | null;
+  url: string | null;
+  secureUrl: string | null;
+  width: number;
+  height: number;
+  format: string | null;
+  bytes: number;
+  errorMessage: string | null;
 }

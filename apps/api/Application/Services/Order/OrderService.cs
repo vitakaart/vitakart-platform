@@ -1,6 +1,7 @@
 // File: apps/api/Application/Services/Order/OrderService.cs
-// Order service with coupon usage tracking
+// Order service with coupon tracking + email notifications
 
+using api.Application.DTOs;
 using api.Application.DTOs.Order;
 using api.Application.Interfaces;
 using api.Application.Services.Order.Helpers;
@@ -8,20 +9,26 @@ using api.Domain.Entities;
 using api.Domain.Enums;
 using api.Domain.Exceptions;
 
+
 namespace api.Application.Services.Order;
 
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantContext _tenantContext;
+    private readonly IEmailService _emailService;
     private readonly OrderCalculator _calculator;
     private readonly OrderNumberGenerator _numberGenerator;
     private readonly OrderMapper _mapper;
 
-    public OrderService(IUnitOfWork unitOfWork, ITenantContext tenantContext)
+    public OrderService(
+        IUnitOfWork unitOfWork,
+        ITenantContext tenantContext,
+        IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _tenantContext = tenantContext;
+        _emailService = emailService;
         _calculator = new OrderCalculator();
         _numberGenerator = new OrderNumberGenerator(unitOfWork);
         _mapper = new OrderMapper();
@@ -52,7 +59,7 @@ public class OrderService : IOrderService
 
         // 5. Calculate totals (with coupon discount from cart)
         var totals = _calculator.Calculate(cartItems);
-        
+
         // Override coupon discount from cart if applied
         if (cart.CouponId.HasValue && cart.CouponDiscount > 0)
         {
@@ -69,7 +76,7 @@ public class OrderService : IOrderService
             var order = await CreateOrderEntityAsync(userId, dto, cart, totals);
             await CreateOrderItemsAsync(order, cartItems);
 
-            // ✅ Track coupon usage if applied
+            //  Track coupon usage if applied
             await TrackCouponUsageAsync(userId, cart, order);
 
             await ClearCartAsync(cart, cartItems);
@@ -78,6 +85,46 @@ public class OrderService : IOrderService
             await _unitOfWork.CommitTransactionAsync();
 
             var createdOrder = await _unitOfWork.Orders.GetOrderWithItemsAsync(order.Id);
+
+            //  Fetch user BEFORE background task (avoid DbContext disposal)
+            var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
+
+            //  Prepare email data BEFORE task (all data captured)
+            if (user != null && createdOrder != null)
+            {
+                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL")
+                               ?? "http://localhost:3000";
+
+                var emailData = new OrderEmailData
+                {
+                    OrderNumber = createdOrder.OrderNumber,
+                    Total = createdOrder.Total,
+                    TotalItems = createdOrder.Items?.Sum(i => i.Quantity) ?? 0,
+                    PaymentMethod = createdOrder.PaymentMethod.ToString(),
+                    OrderDate = createdOrder.CreatedAt,
+                    OrderUrl = $"{frontendUrl}/account/orders/{createdOrder.Id}",
+                    ShippingAddress = FormatAddress(createdOrder)
+                };
+
+                var userEmail = user.Email;
+                var userName = user.FullName;
+
+                // Now safe to run in background (data captured, no DB access)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        Console.WriteLine($"📧 Sending order email for {emailData.OrderNumber}...");
+                        await _emailService.SendOrderPlacedEmailAsync(userEmail, userName, emailData);
+                        Console.WriteLine($" Order email sent for {emailData.OrderNumber}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Order email failed: {ex.Message}");
+                    }
+                });
+            }
+
             return _mapper.ToDto(createdOrder!);
         }
         catch
@@ -168,13 +215,49 @@ public class OrderService : IOrderService
             // Restore stock
             await RestoreStockAsync(order);
 
-            // ✅ Refund coupon usage (so user can use again)
+            //  Refund coupon usage (so user can use again)
             await RefundCouponUsageAsync(order);
 
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitTransactionAsync();
 
             var updated = await _unitOfWork.Orders.GetOrderWithItemsAsync(orderId);
+
+            //  Fetch user + prepare data BEFORE background task
+            var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
+
+            if (user != null && updated != null)
+            {
+                var emailData = new OrderEmailData
+                {
+                    OrderNumber = updated.OrderNumber,
+                    Total = updated.Total,
+                    TotalItems = updated.Items?.Sum(i => i.Quantity) ?? 0,
+                    PaymentMethod = updated.PaymentMethod.ToString(),
+                    OrderDate = updated.CreatedAt,
+                    OrderUrl = "",
+                    ShippingAddress = FormatAddress(updated),
+                    CancellationReason = updated.CancellationReason
+                };
+
+                var userEmail = user.Email;
+                var userName = user.FullName;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        Console.WriteLine($"📧 Sending cancellation email for {emailData.OrderNumber}...");
+                        await _emailService.SendOrderCancelledEmailAsync(userEmail, userName, emailData);
+                        Console.WriteLine($"✅ Cancellation email sent for {emailData.OrderNumber}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Cancellation email failed: {ex.Message}");
+                    }
+                });
+            }
+
             return _mapper.ToDto(updated!);
         }
         catch
@@ -294,7 +377,7 @@ public class OrderService : IOrderService
     }
 
     // ==========================================
-    // ✅ TRACK COUPON USAGE (After order placed)
+    //  TRACK COUPON USAGE (After order placed)
     // ==========================================
     private async Task TrackCouponUsageAsync(Guid userId, Cart cart, api.Domain.Entities.Order order)
     {
@@ -326,7 +409,7 @@ public class OrderService : IOrderService
     }
 
     // ==========================================
-    // ✅ REFUND COUPON USAGE (On order cancel)
+    //  REFUND COUPON USAGE (On order cancel)
     // Soft delete usage so user can use coupon again
     // ==========================================
     private async Task RefundCouponUsageAsync(api.Domain.Entities.Order order)
@@ -394,5 +477,28 @@ public class OrderService : IOrderService
 
         if (order.UserId != userId)
             throw new UnauthorizedException("You cannot access this order");
+    }
+
+ 
+
+    // Format shipping address for emails (HTML)
+    private static string FormatAddress(api.Domain.Entities.Order order)
+    {
+        var parts = new List<string>
+        {
+            order.ShippingFullName,
+            order.ShippingAddressLine1
+        };
+
+        if (!string.IsNullOrEmpty(order.ShippingAddressLine2))
+            parts.Add(order.ShippingAddressLine2);
+
+        if (!string.IsNullOrEmpty(order.ShippingLandmark))
+            parts.Add($"Near {order.ShippingLandmark}");
+
+        parts.Add($"{order.ShippingCity}, {order.ShippingState} - {order.ShippingPincode}");
+        parts.Add($"📞 {order.ShippingPhone}");
+
+        return string.Join("<br>", parts);
     }
 }

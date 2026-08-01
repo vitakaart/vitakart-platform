@@ -9,6 +9,7 @@ using api.Domain.Enums;
 using api.Domain.Exceptions;
 using api.Infrastructure.Extensions;
 
+
 namespace api.Application.Services;
 
 public class AuthService : IAuthService
@@ -16,6 +17,7 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtService _jwtService;
     private readonly ITenantContext _tenantContext;
+    private readonly IEmailService _emailService;
 
     // ==========================================
     // ACCOUNT LOCKOUT CONFIG (from .env)
@@ -29,11 +31,14 @@ public class AuthService : IAuthService
     public AuthService(
         IUnitOfWork unitOfWork,
         IJwtService jwtService,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IEmailService emailService)
+
     {
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _tenantContext = tenantContext;
+        _emailService = emailService;
     }
 
     // ==========================================
@@ -74,6 +79,19 @@ public class AuthService : IAuthService
 
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = await CreateRefreshTokenAsync(user.Id, tenantId, deviceInfo, ipAddress);
+
+        // Send welcome email (fire and forget — don't block registration)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _emailService.SendWelcomeEmailAsync(user.Email, user.FullName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Welcome email failed: {ex.Message}");
+            }
+        });
 
         return new AuthResponseDto
         {
@@ -345,6 +363,7 @@ public class AuthService : IAuthService
         // Update fields
         user.FullName = dto.FullName.Trim();
         user.Phone = dto.Phone?.Trim();
+        user.ProfileImage = dto.ProfileImage;
 
         _unitOfWork.Users.Update(user);
         await _unitOfWork.SaveChangesAsync();
@@ -355,6 +374,7 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Email = user.Email,
             Phone = user.Phone,
+            ProfileImage = user.ProfileImage,
             Role = user.Role.ToRoleString(),
             IsVerified = user.IsVerified
         };
@@ -416,7 +436,7 @@ public class AuthService : IAuthService
                        ?? "http://localhost:3000";
         var resetUrl = $"{frontendUrl}/reset-password?token={token}";
 
-        // Console log for developer
+        // Console log for developer (dev debugging)
         Console.WriteLine("");
         Console.WriteLine("═══════════════════════════════════════════════════════");
         Console.WriteLine("🔐 PASSWORD RESET REQUEST");
@@ -428,13 +448,23 @@ public class AuthService : IAuthService
         Console.WriteLine("═══════════════════════════════════════════════════════");
         Console.WriteLine("");
 
-        // In development, return the token/URL for easy testing
-        // Remove these lines when email service is set up:
-        response.ResetToken = token;
-        response.ResetUrl = resetUrl;
+        // Send actual email
+        var emailSent = await _emailService.SendPasswordResetEmailAsync(
+            user.Email,
+            user.FullName,
+            resetUrl);
 
-        // TODO: Send email here when service is ready
-        // await _emailService.SendPasswordResetEmailAsync(user.Email, resetUrl);
+        if (emailSent)
+        {
+            Console.WriteLine($"✅ Password reset email sent to {user.Email}");
+        }
+        else
+        {
+            Console.WriteLine($"⚠️  Email failed — falling back to dev mode (token in response)");
+            // Fallback: include token in response if email fails
+            response.ResetToken = token;
+            response.ResetUrl = resetUrl;
+        }
 
         return response;
     }
@@ -541,6 +571,8 @@ public class AuthService : IAuthService
             Id = user.Id,
             FullName = user.FullName,
             Email = user.Email,
+            Phone = user.Phone,
+            ProfileImage = user.ProfileImage,
             Role = user.Role.ToRoleString(),
             IsVerified = user.IsVerified
         };

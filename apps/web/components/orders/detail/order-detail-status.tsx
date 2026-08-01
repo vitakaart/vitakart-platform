@@ -68,7 +68,7 @@ export function OrderDetailStatus({ order }: Props) {
         Order Status
       </h3>
 
-      <div className="relative">
+      <div className="relative flex lg:flex-col">
         {/* Vertical line */}
         <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-stone-100" />
 

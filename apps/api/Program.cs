@@ -22,6 +22,8 @@ using Scalar.AspNetCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Threading.RateLimiting;
+using api.Infrastructure.Services.Email;
+using api.Infrastructure.Services.Image;
 
 Env.Load();
 
@@ -114,6 +116,10 @@ builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddScoped<IImageService, ImageService>();
+
 
 // ============================================
 // FLUENT VALIDATION

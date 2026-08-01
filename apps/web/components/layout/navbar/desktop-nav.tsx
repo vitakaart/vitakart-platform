@@ -44,9 +44,9 @@ export function DesktopNav() {
         <div className="flex items-center gap-6 flex-shrink-0">
           <Link href={ROUTES.HOME} className="flex items-center gap-2 group">
             {/* <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-primary-500/20"> */}
-             <Image src="/logos/vitakart-animated-logo (1).gif" alt="" width={100} height={100} />
+            <Image src="/logos/vitakart-animated-logo (1).gif" alt="" width={100} height={100} />
             {/* </div> */}
-           
+
           </Link>
 
           {/* Catalog Button with Mega Menu */}
@@ -110,8 +110,18 @@ export function DesktopNav() {
               href={ROUTES.ACCOUNT}
               className="flex items-center gap-3 ml-2 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors group"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-md">
-                {user.fullName.charAt(0).toUpperCase()}
+              <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                {user.profileImage ? (
+                  <Image
+                    src={user.profileImage}
+                    alt={user.fullName}
+                    fill
+                    className="object-cover"
+                    sizes="36px"
+                  />
+                ) : (
+                  user.fullName.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="hidden xl:block text-left">
                 <p className="text-xs text-gray-500">Hello,</p>
