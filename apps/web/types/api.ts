@@ -589,3 +589,113 @@ export interface ImageUploadResponse {
   bytes: number;
   errorMessage: string | null;
 }
+
+
+
+
+// ==========================================
+// PAYMENT TYPES (Razorpay Integration)
+// ==========================================
+
+// Request: Backend ko bhejenge order ID
+export interface CreatePaymentOrderRequest {
+  orderId: string;
+}
+
+// Response: Backend se milega Razorpay order details
+export interface CreatePaymentOrderResponse {
+  razorpayOrderId: string;
+  razorpayKeyId: string;
+  amount: number;
+  amountInPaise: number;
+  currency: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+}
+
+// Request: Payment complete hone ke baad verify karne ke liye
+export interface VerifyPaymentRequest {
+  orderId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}
+
+// Response: Verification ke baad
+export interface VerifyPaymentResponse {
+  success: boolean;
+  orderNumber: string;
+  message: string;
+  paymentId: string;
+}
+
+// Request: Payment fail hone pe
+export interface PaymentFailureRequest {
+  orderId: string;
+  razorpayOrderId?: string;
+  errorCode?: string;
+  errorDescription?: string;
+}
+
+// ==========================================
+// RAZORPAY WINDOW OBJECT (Global)
+// Razorpay script window.Razorpay create karta hai
+// ==========================================
+
+export interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  image?: string;
+  order_id: string;
+  handler: (response: RazorpaySuccessResponse) => void;
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  notes?: Record<string, string>;
+  theme?: {
+    color?: string;
+  };
+  modal?: {
+    ondismiss?: () => void;
+    escape?: boolean;
+    backdropclose?: boolean;
+  };
+}
+
+export interface RazorpaySuccessResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export interface RazorpayErrorResponse {
+  error: {
+    code: string;
+    description: string;
+    source: string;
+    step: string;
+    reason: string;
+    metadata: {
+      order_id: string;
+      payment_id: string;
+    };
+  };
+}
+
+// Extend Window type globally
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => {
+      open: () => void;
+      on: (event: string, handler: (response: any) => void) => void;
+      close: () => void;
+    };
+  }
+}

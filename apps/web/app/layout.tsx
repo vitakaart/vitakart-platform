@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { AppProviders } from "@/components/providers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import Script from "next/script";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -59,6 +60,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <body className={`${inter.variable} font-sans antialiased`}>
+           {/* RAZORPAY SCRIPT */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
         {/* All providers wrapper */}
         <AppProviders>
           {children}

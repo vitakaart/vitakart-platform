@@ -69,6 +69,9 @@ public class OrderService : IOrderService
             if (totals.Total < 0) totals.Total = 0;
         }
 
+        //  Check if online payment (Razorpay)
+        bool isOnlinePayment = dto.PaymentMethod == PaymentMethod.Razorpay;
+
         // 6. Create order (transaction)
         await _unitOfWork.BeginTransactionAsync();
         try
@@ -76,53 +79,58 @@ public class OrderService : IOrderService
             var order = await CreateOrderEntityAsync(userId, dto, cart, totals);
             await CreateOrderItemsAsync(order, cartItems);
 
-            //  Track coupon usage if applied
-            await TrackCouponUsageAsync(userId, cart, order);
-
-            await ClearCartAsync(cart, cartItems);
+            //  ONLY for COD: Track coupon + clear cart + deduct stock
+            // For Razorpay: These happen AFTER payment verification
+            if (!isOnlinePayment)
+            {
+                await TrackCouponUsageAsync(userId, cart, order);
+                await ClearCartAsync(cart, cartItems);
+            }
 
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitTransactionAsync();
 
             var createdOrder = await _unitOfWork.Orders.GetOrderWithItemsAsync(order.Id);
 
-            //  Fetch user BEFORE background task (avoid DbContext disposal)
-            var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
-
-            //  Prepare email data BEFORE task (all data captured)
-            if (user != null && createdOrder != null)
+            //  ONLY send confirmation email for COD orders
+            // For Razorpay: Email sent AFTER payment verification
+            if (!isOnlinePayment)
             {
-                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL")
-                               ?? "http://localhost:3000";
+                var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
 
-                var emailData = new OrderEmailData
+                if (user != null && createdOrder != null)
                 {
-                    OrderNumber = createdOrder.OrderNumber,
-                    Total = createdOrder.Total,
-                    TotalItems = createdOrder.Items?.Sum(i => i.Quantity) ?? 0,
-                    PaymentMethod = createdOrder.PaymentMethod.ToString(),
-                    OrderDate = createdOrder.CreatedAt,
-                    OrderUrl = $"{frontendUrl}/account/orders/{createdOrder.Id}",
-                    ShippingAddress = FormatAddress(createdOrder)
-                };
+                    var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL")
+                                   ?? "http://localhost:3000";
 
-                var userEmail = user.Email;
-                var userName = user.FullName;
+                    var emailData = new OrderEmailData
+                    {
+                        OrderNumber = createdOrder.OrderNumber,
+                        Total = createdOrder.Total,
+                        TotalItems = createdOrder.Items?.Sum(i => i.Quantity) ?? 0,
+                        PaymentMethod = createdOrder.PaymentMethod.ToString(),
+                        OrderDate = createdOrder.CreatedAt,
+                        OrderUrl = $"{frontendUrl}/account/orders/{createdOrder.Id}",
+                        ShippingAddress = FormatAddress(createdOrder)
+                    };
 
-                // Now safe to run in background (data captured, no DB access)
-                _ = Task.Run(async () =>
-                {
-                    try
+                    var userEmail = user.Email;
+                    var userName = user.FullName;
+
+                    _ = Task.Run(async () =>
                     {
-                        Console.WriteLine($"📧 Sending order email for {emailData.OrderNumber}...");
-                        await _emailService.SendOrderPlacedEmailAsync(userEmail, userName, emailData);
-                        Console.WriteLine($" Order email sent for {emailData.OrderNumber}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"❌ Order email failed: {ex.Message}");
-                    }
-                });
+                        try
+                        {
+                            Console.WriteLine($"📧 Sending order email for {emailData.OrderNumber}...");
+                            await _emailService.SendOrderPlacedEmailAsync(userEmail, userName, emailData);
+                            Console.WriteLine($" Order email sent for {emailData.OrderNumber}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"❌ Order email failed: {ex.Message}");
+                        }
+                    });
+                }
             }
 
             return _mapper.ToDto(createdOrder!);
@@ -249,7 +257,7 @@ public class OrderService : IOrderService
                     {
                         Console.WriteLine($"📧 Sending cancellation email for {emailData.OrderNumber}...");
                         await _emailService.SendOrderCancelledEmailAsync(userEmail, userName, emailData);
-                        Console.WriteLine($"✅ Cancellation email sent for {emailData.OrderNumber}");
+                        Console.WriteLine($" Cancellation email sent for {emailData.OrderNumber}");
                     }
                     catch (Exception ex)
                     {
@@ -479,7 +487,7 @@ public class OrderService : IOrderService
             throw new UnauthorizedException("You cannot access this order");
     }
 
- 
+
 
     // Format shipping address for emails (HTML)
     private static string FormatAddress(api.Domain.Entities.Order order)

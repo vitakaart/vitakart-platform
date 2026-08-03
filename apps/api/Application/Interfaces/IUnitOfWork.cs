@@ -13,6 +13,8 @@ public interface IUnitOfWork
     ITenantRepository Tenants { get; }
     ICartRepository Carts { get; }
     IOrderRepository Orders { get; }  
+
+    IPaymentRepository Payments { get; }
     
     IAddressRepository Addresses { get; }
     IWishlistRepository Wishlists { get; }

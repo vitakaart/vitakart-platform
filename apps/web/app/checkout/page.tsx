@@ -1,5 +1,5 @@
 // File: apps/web/app/checkout/page.tsx
-// Checkout with address selector integration
+// Checkout with Razorpay + COD support
 
 "use client";
 
@@ -25,13 +25,14 @@ import { OrderItems } from "@/components/checkout/order-items";
 import { Summary } from "@/components/checkout/summary";
 import { useCart } from "@/lib/hooks/use-cart";
 import { useCreateOrder } from "@/lib/hooks/use-orders";
+import { useRazorpayPayment } from "@/lib/hooks/use-payment";
 import { ROUTES } from "@/lib/constants/routes";
 import { PaymentMethod as PaymentMethodEnum } from "@/types/api";
 import type { Address } from "@/types/api";
 import { toast } from "sonner";
 
 // ==========================================
-// FORM VALIDATION SCHEMA (Only notes now)
+// FORM VALIDATION SCHEMA
 // ==========================================
 const checkoutSchema = z.object({
   customerNotes: z.string().max(500).optional(),
@@ -60,20 +61,22 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
           return (
             <div key={step.num} className="flex items-center">
               <div
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl transition-all duration-300 ${isActive
+                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl transition-all duration-300 ${
+                  isActive
                     ? "bg-primary-500 text-white shadow-md shadow-primary-200"
                     : isCompleted
                       ? "bg-primary-100 text-primary-700"
                       : "bg-[#F5F1E8] text-[#6B665D]"
-                  }`}
+                }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isActive
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    isActive
                       ? "bg-white text-primary-600"
                       : isCompleted
                         ? "bg-primary-500 text-white"
                         : "bg-[#E9E1D2] text-[#6B665D]"
-                    }`}
+                  }`}
                 >
                   {isCompleted ? "✓" : step.num}
                 </div>
@@ -84,8 +87,9 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
               </div>
               {i < steps.length - 1 && (
                 <ChevronRight
-                  className={`w-4 h-4 mx-1 md:mx-2 ${isCompleted ? "text-primary-400" : "text-[#E9E1D2]"
-                    }`}
+                  className={`w-4 h-4 mx-1 md:mx-2 ${
+                    isCompleted ? "text-primary-400" : "text-[#E9E1D2]"
+                  }`}
                 />
               )}
             </div>
@@ -137,6 +141,8 @@ function CheckoutContent() {
   const router = useRouter();
   const { cart, isEmpty, isLoading } = useCart();
   const createOrder = useCreateOrder();
+  const { initiatePayment, isProcessing: isPaymentProcessing } =
+    useRazorpayPayment();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -172,7 +178,6 @@ function CheckoutContent() {
     }
   }, [isLoading, isEmpty, router]);
 
-  // Just return null while redirecting
   if (!isLoading && isEmpty) {
     return null;
   }
@@ -197,35 +202,45 @@ function CheckoutContent() {
   }
 
   // ==========================================
-  // PLACE ORDER
+  // PLACE ORDER (COD + RAZORPAY)
   // ==========================================
-  const onSubmit = (data: CheckoutFormData) => {
-    // Validate address selected
+  const onSubmit = async (data: CheckoutFormData) => {
+    // Validate address
     if (!selectedAddress) {
       toast.error("Please select a delivery address");
-      // Scroll to top to show address section
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     setCurrentStep(3);
 
-    createOrder.mutate({
-      paymentMethod,
-      idempotencyKey,
-      // Address from selected saved address
-      fullName: selectedAddress.fullName,
-      phone: selectedAddress.phone,
-      addressLine1: selectedAddress.addressLine1,
-      addressLine2: selectedAddress.addressLine2 || undefined,
-      landmark: selectedAddress.landmark || undefined,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      pincode: selectedAddress.pincode,
-      country: selectedAddress.country,
-      // Delivery notes from form
-      customerNotes: data.customerNotes,
-    });
+    try {
+      // Step 1: Create order in backend
+      const order = await createOrder.mutateAsync({
+        paymentMethod,
+        idempotencyKey,
+        fullName: selectedAddress.fullName,
+        phone: selectedAddress.phone,
+        addressLine1: selectedAddress.addressLine1,
+        addressLine2: selectedAddress.addressLine2 || undefined,
+        landmark: selectedAddress.landmark || undefined,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.pincode,
+        country: selectedAddress.country,
+        customerNotes: data.customerNotes,
+      });
+
+      // Step 2: If Razorpay, open payment modal
+      if (paymentMethod === PaymentMethodEnum.Razorpay) {
+        await initiatePayment(order.id);
+      }
+      // For COD: useCreateOrder hook auto-redirects to success page
+    } catch (error) {
+      // Errors already handled by hooks (toast shown)
+      console.error("Order placement failed:", error);
+      setCurrentStep(2); // Reset step on error
+    }
   };
 
   return (
@@ -258,22 +273,18 @@ function CheckoutContent() {
           <div className="grid lg:grid-cols-[1fr_420px] gap-8">
             {/* Left: Form Sections */}
             <div className="space-y-6">
-              {/* Address Selector (replaces old form) */}
               <AddressSelector
                 selectedAddressId={selectedAddress?.id || null}
                 onSelect={handleAddressSelect}
               />
 
-              {/* Payment Method */}
               <PaymentMethod
                 selected={paymentMethod}
                 onChange={setPaymentMethod}
               />
 
-              {/* Delivery Notes */}
               <DeliveryNotes register={register} />
 
-              {/* Order Items */}
               <OrderItems cart={cart} />
             </div>
 
@@ -282,7 +293,7 @@ function CheckoutContent() {
               <Summary
                 cart={cart}
                 onPlaceOrder={handleSubmit(onSubmit)}
-                isSubmitting={createOrder.isPending}
+                isSubmitting={createOrder.isPending || isPaymentProcessing}
                 disabled={!selectedAddress}
               />
             </div>

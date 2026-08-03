@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ordersApi } from "@/lib/api/orders";
 import { getErrorMessage } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { PaymentMethod as PaymentMethodEnum } from "@/types/api";
 import type {
   CreateOrderInput,
   CancelOrderInput,
@@ -72,22 +73,24 @@ export function useCreateOrder() {
   return useMutation({
     mutationFn: (data: CreateOrderInput) => ordersApi.createOrder(data),
     onSuccess: (order) => {
-      // Invalidate cart (it was cleared on backend)
-      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      // Only invalidate for COD (Razorpay does it after payment)
+      const isRazorpay =
+        order.paymentMethod === PaymentMethodEnum.Razorpay ||
+        (order.paymentMethod as unknown as string) === "Razorpay" ||
+        (order.paymentMethod as unknown as number) === 1;
 
-      // Invalidate orders list
-      queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+      if (!isRazorpay) {
+        // Cart cleared + orders + coupons refresh (COD only)
+        queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: ["coupons"] });
 
-      // Invalidate coupons (usage count changed)
-      queryClient.invalidateQueries({ queryKey: ["coupons"] });
-
-      // Show success toast
-      toast.success("Order placed successfully!", {
-        description: `Order #${order.orderNumber}`,
-      });
-
-      // Redirect to success page
-      router.push(`/order-success/${order.orderNumber}`);
+        toast.success("Order placed successfully!", {
+          description: `Order #${order.orderNumber}`,
+        });
+        router.push(`/order-success/${order.orderNumber}`);
+      }
+      // For Razorpay: use-payment hook handles everything after verification
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -113,7 +116,7 @@ export function useCancelOrder() {
       queryClient.setQueryData([...ORDERS_QUERY_KEY, order.id], order);
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
 
-      // ✅ Invalidate coupons (usage refunded)
+      // Invalidate coupons (usage refunded)
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
 
       toast.success("Order cancelled", {

@@ -21,6 +21,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IRefreshTokenRepository? _refreshTokens;
     private ITenantRepository? _tenants;
     private IOrderRepository? _orders;
+    private IPaymentRepository? _payments;
     private IAddressRepository? _addresses;
     private IWishlistRepository? _wishlists;
     private IReviewRepository? _reviews;
@@ -61,6 +62,8 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public IOrderRepository Orders =>
         _orders ??= new OrderRepository(_context, _tenantContext);
 
+    public IPaymentRepository Payments =>
+        _payments ??= new PaymentRepository(_context, _tenantContext);
     public IAddressRepository Addresses =>
 _addresses ??= new AddressRepository(_context, _tenantContext);
 

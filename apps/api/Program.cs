@@ -103,6 +103,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 
 // Repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -117,8 +119,23 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddScoped<IImageService, ImageService>();
+
+
+
+// ============================================
+// RAZORPAY CONFIGURATION
+// ============================================
+builder.Services.Configure<api.Infrastructure.Configuration.RazorpaySettings>(settings =>
+{
+    settings.KeyId = Environment.GetEnvironmentVariable("RAZORPAY_KEY_ID")
+        ?? throw new Exception("RAZORPAY_KEY_ID not set in .env");
+    settings.KeySecret = Environment.GetEnvironmentVariable("RAZORPAY_KEY_SECRET")
+        ?? throw new Exception("RAZORPAY_KEY_SECRET not set in .env");
+    settings.Currency = Environment.GetEnvironmentVariable("RAZORPAY_CURRENCY") ?? "INR";
+});
 
 
 // ============================================

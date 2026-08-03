@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<CartItem> CartItems { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     public DbSet<Address> Addresses { get; set; }
 
@@ -316,6 +317,38 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+
+        // Payment configuration
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.Amount)
+                .HasPrecision(18, 2);
+
+            entity.Property(p => p.Currency)
+                .HasMaxLength(10);
+
+            entity.HasIndex(p => p.RazorpayOrderId);
+            entity.HasIndex(p => p.OrderId);
+            entity.HasIndex(p => p.TenantId);
+
+            // Relationships
+            entity.HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(p => p.Tenant)
+                .WithMany()
+                .HasForeignKey(p => p.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         // ==========================================
         // ORDER ITEM CONFIGURATION (NEW)
         // ==========================================
