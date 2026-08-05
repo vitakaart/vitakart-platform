@@ -8,5 +8,7 @@ public interface IRefreshTokenRepository : IRepository<RefreshToken>
 {
     Task<RefreshToken?> GetByTokenAsync(string token);
     Task<RefreshToken?> GetByTokenWithUserAsync(string token);
-    Task RevokeAllUserTokensAsync(Guid userId);
+    
+
+    Task<int> RevokeAllUserTokensAsync(Guid userId, string? reason = null);
 }

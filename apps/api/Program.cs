@@ -134,6 +134,8 @@ builder.Services.Configure<api.Infrastructure.Configuration.RazorpaySettings>(se
         ?? throw new Exception("RAZORPAY_KEY_ID not set in .env");
     settings.KeySecret = Environment.GetEnvironmentVariable("RAZORPAY_KEY_SECRET")
         ?? throw new Exception("RAZORPAY_KEY_SECRET not set in .env");
+    settings.WebhookSecret = Environment.GetEnvironmentVariable("RAZORPAY_WEBHOOK_SECRET")
+  ?? string.Empty;
     settings.Currency = Environment.GetEnvironmentVariable("RAZORPAY_CURRENCY") ?? "INR";
 });
 

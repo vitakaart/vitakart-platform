@@ -77,7 +77,9 @@ public class OrderService : IOrderService
         try
         {
             var order = await CreateOrderEntityAsync(userId, dto, cart, totals);
-            await CreateOrderItemsAsync(order, cartItems);
+            //  Deduct stock ONLY for COD (immediate payment)
+            // Razorpay: Stock deducted AFTER payment verification
+            await CreateOrderItemsAsync(order, cartItems, deductStock: !isOnlinePayment);
 
             //  ONLY for COD: Track coupon + clear cart + deduct stock
             // For Razorpay: These happen AFTER payment verification
@@ -141,6 +143,9 @@ public class OrderService : IOrderService
             throw;
         }
     }
+
+
+
 
     // ==========================================
     // GET ORDER BY ID
@@ -209,6 +214,8 @@ public class OrderService : IOrderService
         await _unitOfWork.BeginTransactionAsync();
         try
         {
+
+
             // Update order
             order.Status = OrderStatus.Cancelled;
             order.CancellationReason = reason?.Trim() ?? "Cancelled by customer";
@@ -348,8 +355,13 @@ public class OrderService : IOrderService
         return order;
     }
 
-    // Create OrderItems + deduct stock
-    private async Task CreateOrderItemsAsync(api.Domain.Entities.Order order, List<CartItem> cartItems)
+
+    // Create OrderItems + optionally deduct stock (COD only)
+    // For Razorpay: Stock deducted AFTER payment verification
+    private async Task CreateOrderItemsAsync(
+        api.Domain.Entities.Order order,
+        List<CartItem> cartItems,
+        bool deductStock)  //  NEW PARAMETER
     {
         foreach (var cartItem in cartItems)
         {
@@ -378,9 +390,21 @@ public class OrderService : IOrderService
 
             await _unitOfWork.Orders.AddOrderItemAsync(orderItem);
 
-            // Deduct stock
-            product.StockQuantity -= cartItem.Quantity;
-            _unitOfWork.Products.Update(product);
+            //  ONLY deduct stock for COD (immediate payment)
+            // For Razorpay: Stock deducted AFTER payment success
+            if (deductStock)
+            {
+                var success = await _unitOfWork.Products.TryDeductStockAsync(
+                    product.Id,
+                    cartItem.Quantity
+                );
+
+                if (!success)
+                {
+                    throw new ValidationException(
+                        $"'{product.Name}' is out of stock. Please refresh and try again.");
+                }
+            }
         }
     }
 
@@ -463,17 +487,16 @@ public class OrderService : IOrderService
         return Task.CompletedTask;
     }
 
-    // Restore stock on cancellation
+    // Restore stock on cancellation (atomic)
     private async Task RestoreStockAsync(api.Domain.Entities.Order order)
     {
         foreach (var item in order.Items.Where(i => !i.IsDeleted))
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-            if (product != null)
-            {
-                product.StockQuantity += item.Quantity;
-                _unitOfWork.Products.Update(product);
-            }
+            //  ATOMIC stock restoration
+            await _unitOfWork.Products.RestoreStockAsync(
+                item.ProductId,
+                item.Quantity
+            );
         }
     }
 

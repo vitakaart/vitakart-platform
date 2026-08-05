@@ -12,6 +12,7 @@ using Razorpay.Api;
 using System.Security.Cryptography;
 using System.Text;
 using PaymentEntity = api.Domain.Entities.Payment;
+using System.Text.Json;
 
 namespace api.Application.Services;
 
@@ -220,17 +221,23 @@ public class PaymentService : IPaymentService
             order.ConfirmedAt = DateTime.UtcNow;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // 3. NOW deduct stock (was pending until payment)
+            // 3.  ATOMIC stock deduction (race-condition safe)
             if (order.Items != null)
             {
                 foreach (var item in order.Items)
                 {
-                    var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-                    if (product != null)
+                    var success = await _unitOfWork.Products.TryDeductStockAsync(
+                        item.ProductId,
+                        item.Quantity
+                    );
+
+                    if (!success)
                     {
-                        product.StockQuantity -= item.Quantity;
-                        if (product.StockQuantity < 0) product.StockQuantity = 0;
-                        product.UpdatedAt = DateTime.UtcNow;
+                        // Payment succeeded but stock ran out
+                        // Roll back the transaction
+                        throw new BadRequestException(
+                            $"Insufficient stock for one of the products. " +
+                            "Payment will be refunded within 5-7 business days.");
                     }
                 }
             }
@@ -386,6 +393,282 @@ public class PaymentService : IPaymentService
             "Payment failed for order {OrderNumber}. Code: {Code}, Desc: {Desc}",
             order.OrderNumber, request.ErrorCode, request.ErrorDescription
         );
+    }
+
+    // ==========================================
+    // WEBHOOK HANDLER (Server-to-Server events)
+    // ==========================================
+    public async Task<bool> HandleWebhookAsync(string requestBody, string razorpaySignature)
+    {
+        // Step 1: Verify signature (security check)
+        if (string.IsNullOrEmpty(_razorpaySettings.WebhookSecret))
+        {
+            _logger.LogWarning("Webhook received but WebhookSecret not configured");
+            return false;
+        }
+
+        bool isValid = VerifyWebhookSignature(requestBody, razorpaySignature);
+
+        if (!isValid)
+        {
+            _logger.LogWarning("⚠️ INVALID webhook signature — possible fraud attempt!");
+            return false;
+        }
+
+        // Step 2: Parse webhook payload
+        try
+        {
+            using var doc = JsonDocument.Parse(requestBody);
+            var root = doc.RootElement;
+
+            var eventType = root.GetProperty("event").GetString();
+            _logger.LogInformation("📩 Webhook received: {Event}", eventType);
+
+            // Step 3: Handle different events
+            switch (eventType)
+            {
+                case "payment.captured":
+                    await HandlePaymentCapturedAsync(root);
+                    break;
+
+                case "payment.failed":
+                    await HandlePaymentFailedWebhookAsync(root);
+                    break;
+
+                case "refund.created":
+                    await HandleRefundCreatedAsync(root);
+                    break;
+
+                case "refund.processed":
+                    await HandleRefundProcessedAsync(root);
+                    break;
+
+                default:
+                    _logger.LogInformation("Unhandled webhook event: {Event}", eventType);
+                    break;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process webhook");
+            return false;
+        }
+    }
+
+    // ==========================================
+    // WEBHOOK SIGNATURE VERIFICATION
+    // ==========================================
+    private bool VerifyWebhookSignature(string payload, string signature)
+    {
+        try
+        {
+            byte[] secretBytes = Encoding.UTF8.GetBytes(_razorpaySettings.WebhookSecret);
+            byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+            using var hmac = new HMACSHA256(secretBytes);
+            byte[] hashBytes = hmac.ComputeHash(payloadBytes);
+
+            string computedSignature = Convert.ToHexString(hashBytes).ToLower();
+
+            return CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(computedSignature),
+                Encoding.UTF8.GetBytes(signature.ToLower())
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Webhook signature verification error");
+            return false;
+        }
+    }
+
+    // ==========================================
+    // PAYMENT CAPTURED HANDLER
+    // ==========================================
+    private async Task HandlePaymentCapturedAsync(JsonElement root)
+    {
+        var paymentEntity = root.GetProperty("payload")
+            .GetProperty("payment")
+            .GetProperty("entity");
+
+        string razorpayPaymentId = paymentEntity.GetProperty("id").GetString() ?? "";
+        string razorpayOrderId = paymentEntity.GetProperty("order_id").GetString() ?? "";
+
+        _logger.LogInformation(
+            "Payment captured webhook: {PaymentId} for order {OrderId}",
+            razorpayPaymentId, razorpayOrderId
+        );
+
+        // Find payment record
+        var payment = await _unitOfWork.Payments.GetByRazorpayOrderIdAsync(razorpayOrderId);
+        if (payment == null)
+        {
+            _logger.LogWarning("Payment not found for Razorpay order: {OrderId}", razorpayOrderId);
+            return;
+        }
+
+        // Skip if already processed (frontend already verified)
+        if (payment.Status == PaymentStatus.Paid)
+        {
+            _logger.LogInformation("Payment already marked as paid via frontend verification");
+            return;
+        }
+
+        // Get order
+        var order = await _unitOfWork.Orders.GetOrderWithItemsAsync(payment.OrderId);
+        if (order == null) return;
+
+        // Update in transaction (same logic as VerifyPaymentAsync)
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            payment.Status = PaymentStatus.Paid;
+            payment.RazorpayPaymentId = razorpayPaymentId;
+            payment.PaidAt = DateTime.UtcNow;
+            payment.UpdatedAt = DateTime.UtcNow;
+
+            order.PaymentStatus = PaymentStatus.Paid;
+            order.Status = OrderStatus.Confirmed;
+            order.PaymentTransactionId = razorpayPaymentId;
+            order.PaidAt = DateTime.UtcNow;
+            order.ConfirmedAt = DateTime.UtcNow;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            // Deduct stock
+            if (order.Items != null)
+            {
+                foreach (var item in order.Items)
+                {
+                    await _unitOfWork.Products.TryDeductStockAsync(item.ProductId, item.Quantity);
+                }
+            }
+
+            // Clear cart
+            var cart = await _unitOfWork.Carts.GetUserCartAsync(order.UserId);
+            if (cart != null && cart.Items != null)
+            {
+                foreach (var item in cart.Items.Where(i => !i.IsDeleted))
+                {
+                    item.IsDeleted = true;
+                    item.UpdatedAt = DateTime.UtcNow;
+                }
+                cart.CouponId = null;
+                cart.CouponCode = null;
+                cart.CouponDiscount = 0;
+                cart.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+
+            _logger.LogInformation("✅ Order confirmed via webhook: {OrderNumber}", order.OrderNumber);
+
+            // Send email (background)
+            var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
+            if (user != null)
+            {
+                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:3000";
+                var emailData = new OrderEmailData
+                {
+                    OrderNumber = order.OrderNumber,
+                    Total = order.Total,
+                    TotalItems = order.Items?.Sum(i => i.Quantity) ?? 0,
+                    PaymentMethod = "Online Payment (Razorpay)",
+                    OrderDate = order.CreatedAt,
+                    OrderUrl = $"{frontendUrl}/account/orders/{order.Id}",
+                    ShippingAddress = FormatAddress(order)
+                };
+
+                var userEmail = user.Email;
+                var userName = user.FullName;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _emailService.SendOrderPlacedEmailAsync(userEmail, userName, emailData);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Webhook email failed");
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _logger.LogError(ex, "Webhook processing failed for order {OrderNumber}", order.OrderNumber);
+        }
+    }
+
+    // ==========================================
+    // PAYMENT FAILED HANDLER
+    // ==========================================
+    private async Task HandlePaymentFailedWebhookAsync(JsonElement root)
+    {
+        var paymentEntity = root.GetProperty("payload")
+            .GetProperty("payment")
+            .GetProperty("entity");
+
+        string razorpayOrderId = paymentEntity.GetProperty("order_id").GetString() ?? "";
+        string errorCode = paymentEntity.TryGetProperty("error_code", out var ec)
+            ? ec.GetString() ?? "" : "";
+        string errorDesc = paymentEntity.TryGetProperty("error_description", out var ed)
+            ? ed.GetString() ?? "" : "";
+
+        var payment = await _unitOfWork.Payments.GetByRazorpayOrderIdAsync(razorpayOrderId);
+        if (payment == null || payment.Status == PaymentStatus.Paid) return;
+
+        payment.Status = PaymentStatus.Failed;
+        payment.FailureReason = errorDesc;
+        payment.ErrorCode = errorCode;
+        payment.FailedAt = DateTime.UtcNow;
+        payment.UpdatedAt = DateTime.UtcNow;
+
+        var order = await _unitOfWork.Orders.GetByIdAsync(payment.OrderId);
+        if (order != null)
+        {
+            order.PaymentStatus = PaymentStatus.Failed;
+            order.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogWarning("Payment failed via webhook. Order: {OrderId}, Code: {Code}", razorpayOrderId, errorCode);
+    }
+
+    // ==========================================
+    // REFUND CREATED HANDLER
+    // ==========================================
+    private async Task HandleRefundCreatedAsync(JsonElement root)
+    {
+        var refundEntity = root.GetProperty("payload")
+            .GetProperty("refund")
+            .GetProperty("entity");
+
+        string razorpayPaymentId = refundEntity.GetProperty("payment_id").GetString() ?? "";
+        _logger.LogInformation("Refund created for payment: {PaymentId}", razorpayPaymentId);
+
+        // TODO: Update order/payment status when refund feature added
+        await Task.CompletedTask;
+    }
+
+    // ==========================================
+    // REFUND PROCESSED HANDLER
+    // ==========================================
+    private async Task HandleRefundProcessedAsync(JsonElement root)
+    {
+        var refundEntity = root.GetProperty("payload")
+            .GetProperty("refund")
+            .GetProperty("entity");
+
+        string razorpayPaymentId = refundEntity.GetProperty("payment_id").GetString() ?? "";
+        _logger.LogInformation("Refund processed for payment: {PaymentId}", razorpayPaymentId);
+
+        // TODO: Update order status to Refunded
+        await Task.CompletedTask;
     }
 
     // ==========================================

@@ -14,7 +14,6 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
 
     public async Task<RefreshToken?> GetByTokenAsync(string token)
     {
-        // Refresh tokens use unfiltered query (no tenant filter needed for lookup)
         return await QueryUnfiltered()
             .FirstOrDefaultAsync(rt => rt.Token == token);
     }
@@ -26,7 +25,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
             .FirstOrDefaultAsync(rt => rt.Token == token);
     }
 
-    public async Task RevokeAllUserTokensAsync(Guid userId)
+    public async Task<int> RevokeAllUserTokensAsync(Guid userId, string? reason = null)
     {
         var tokens = await QueryUnfiltered()
             .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
@@ -37,6 +36,14 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         {
             token.RevokedAt = now;
             token.UpdatedAt = now;
+            
+            // Store reason in ReplacedByToken field for audit
+            if (!string.IsNullOrEmpty(reason))
+            {
+                token.ReplacedByToken = reason;
+            }
         }
+        
+        return tokens.Count;
     }
 }

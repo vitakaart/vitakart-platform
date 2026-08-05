@@ -1,25 +1,22 @@
-// File: apps/web/lib/hooks/use-payment.ts
-// Payment hooks — Razorpay integration with React Query
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import { paymentsApi } from "@/lib/api/payments";
 import { getErrorMessage } from "@/lib/api/client";
+import { loadRazorpayScript } from "@/lib/razorpay-loader";
 import type {
   CreatePaymentOrderResponse,
   RazorpaySuccessResponse,
   RazorpayErrorResponse,
 } from "@/types/api";
 
-// ==========================================
-// MAIN HOOK: Handle full Razorpay flow
-// ==========================================
 export function useRazorpayPayment() {
   const router = useRouter();
-  const queryClient = useQueryClient(); // ✅ NEW
+  const queryClient = useQueryClient();
+  const [isLoadingScript, setIsLoadingScript] = useState(false);
 
-  // Mutation 1: Create Razorpay order (backend call)
+  // Create Razorpay order on backend
   const createOrderMutation = useMutation({
     mutationFn: paymentsApi.createOrder,
     onError: (error) => {
@@ -27,31 +24,48 @@ export function useRazorpayPayment() {
     },
   });
 
-  // Mutation 2: Verify payment (backend call)
+  // Verify payment signature on backend
   const verifyPaymentMutation = useMutation({
     mutationFn: paymentsApi.verifyPayment,
     onSuccess: () => {
-      // ✅ Payment verified — NOW refresh cart, orders, coupons
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
     },
   });
 
-  // Main function: Complete payment flow
   const initiatePayment = async (orderId: string) => {
     try {
-      // Step 1: Check if Razorpay script is loaded
-      if (typeof window === "undefined" || !window.Razorpay) {
+      // Step 1: Load Razorpay script dynamically
+      setIsLoadingScript(true);
+      const loadingToast = toast.loading("Preparing payment...");
+
+      try {
+        await loadRazorpayScript();
+        toast.dismiss(loadingToast);
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Payment system unavailable. Please try again."
+        );
+        return;
+      } finally {
+        setIsLoadingScript(false);
+      }
+
+      // Step 2: Verify Razorpay is available
+      if (!window.Razorpay) {
         toast.error("Payment system not ready. Please refresh and try again.");
         return;
       }
 
-      // Step 2: Create Razorpay order on backend
+      // Step 3: Create Razorpay order on backend
       const paymentOrder: CreatePaymentOrderResponse =
         await createOrderMutation.mutateAsync({ orderId });
 
-      // Step 3: Open Razorpay checkout modal
+      // Step 4: Configure and open Razorpay checkout
       const razorpay = new window.Razorpay({
         key: paymentOrder.razorpayKeyId,
         amount: paymentOrder.amountInPaise,
@@ -72,11 +86,10 @@ export function useRazorpayPayment() {
         theme: {
           color: "#10B981",
         },
-        // ==========================================
-        // SUCCESS HANDLER
-        // ==========================================
+
+        // Payment success handler
         handler: async (response: RazorpaySuccessResponse) => {
-          const loadingToast = toast.loading("Verifying payment...");
+          const verifyToast = toast.loading("Verifying payment...");
 
           try {
             const result = await verifyPaymentMutation.mutateAsync({
@@ -86,10 +99,10 @@ export function useRazorpayPayment() {
               razorpaySignature: response.razorpay_signature,
             });
 
-            toast.dismiss(loadingToast);
+            toast.dismiss(verifyToast);
 
             if (result.success) {
-              toast.success("Payment successful! 🎉");
+              toast.success("Payment successful");
               router.push(`/order-success/${result.orderNumber}`);
             } else {
               toast.error(
@@ -97,13 +110,12 @@ export function useRazorpayPayment() {
               );
             }
           } catch (error) {
-            toast.dismiss(loadingToast);
+            toast.dismiss(verifyToast);
             toast.error(getErrorMessage(error));
           }
         },
-        // ==========================================
-        // MODAL DISMISS HANDLER
-        // ==========================================
+
+        // Modal close handler
         modal: {
           ondismiss: () => {
             toast.info("Payment cancelled. Your order is saved as pending.");
@@ -113,7 +125,7 @@ export function useRazorpayPayment() {
         },
       });
 
-      // Step 4: Handle payment failure event
+      // Payment failure handler
       razorpay.on("payment.failed", async (response: RazorpayErrorResponse) => {
         toast.error(
           response.error.description || "Payment failed. Please try again."
@@ -131,7 +143,7 @@ export function useRazorpayPayment() {
         }
       });
 
-      // Step 5: Open the modal
+      // Step 5: Open the payment modal
       razorpay.open();
     } catch (error) {
       console.error("Payment initiation failed:", error);
@@ -140,9 +152,12 @@ export function useRazorpayPayment() {
 
   return {
     initiatePayment,
+    isLoadingScript,
     isCreatingOrder: createOrderMutation.isPending,
     isVerifying: verifyPaymentMutation.isPending,
     isProcessing:
-      createOrderMutation.isPending || verifyPaymentMutation.isPending,
+      isLoadingScript ||
+      createOrderMutation.isPending ||
+      verifyPaymentMutation.isPending,
   };
 }

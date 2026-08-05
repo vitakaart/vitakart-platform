@@ -203,7 +203,7 @@ public class AuthService : IAuthService
     }
 
     // ==========================================
-    // REFRESH TOKEN
+    // REFRESH TOKEN (with THEFT DETECTION)
     // ==========================================
     public async Task<AuthResponseDto> RefreshTokenAsync(string refreshToken, string? deviceInfo, string? ipAddress)
     {
@@ -219,9 +219,163 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Invalid refresh token");
         }
 
-        if (!existingToken.IsActive)
+        // ==========================================
+        // 🚨 THEFT DETECTION
+        // If REVOKED token is being reused = someone stole it!
+        // Revoke ALL user's tokens for safety
+        // ==========================================
+        if (existingToken.RevokedAt != null)
         {
-            throw new UnauthorizedException("Refresh token expired or revoked");
+            // Log security incident
+            Console.WriteLine("");
+            Console.WriteLine("═══════════════════════════════════════════════════════");
+            Console.WriteLine("🚨 SECURITY ALERT: TOKEN THEFT DETECTED!");
+            Console.WriteLine("═══════════════════════════════════════════════════════");
+            Console.WriteLine($"👤 User ID: {existingToken.UserId}");
+            Console.WriteLine($"📧 Email: {existingToken.User?.Email ?? "unknown"}");
+            Console.WriteLine($"🔑 Reused Token: {refreshToken.Substring(0, Math.Min(20, refreshToken.Length))}...");
+            Console.WriteLine($"📍 IP Address: {ipAddress ?? "unknown"}");
+            Console.WriteLine($"💻 Device: {deviceInfo ?? "unknown"}");
+            Console.WriteLine($"⏰ Original Revoked: {existingToken.RevokedAt:g}");
+            Console.WriteLine($"🔒 Action: Revoking ALL user sessions");
+            Console.WriteLine("═══════════════════════════════════════════════════════");
+            Console.WriteLine("");
+
+            // Revoke ALL active tokens for this user
+            var revokedCount = await _unitOfWork.RefreshTokens.RevokeAllUserTokensAsync(
+                existingToken.UserId,
+                $"THEFT_DETECTED_{DateTime.UtcNow:yyyyMMddHHmmss}"
+            );
+
+            await _unitOfWork.SaveChangesAsync();
+
+            Console.WriteLine($"🛡️ Revoked {revokedCount} active sessions for user safety");
+
+            // Send security alert email (background)
+            if (existingToken.User != null)
+            {
+                var userEmail = existingToken.User.Email;
+                var userName = existingToken.User.FullName;
+                var alertIp = ipAddress ?? "Unknown";
+                var alertDevice = deviceInfo ?? "Unknown device";
+                var alertTime = DateTime.UtcNow.ToString("dddd, MMMM dd, yyyy 'at' hh:mm tt UTC");
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var subject = "🚨 Security Alert - Unusual Activity Detected on Your Account";
+
+                        var htmlBody = $@"
+                        <!DOCTYPE html>
+                        <html>
+                        <head><meta charset='utf-8'></head>
+                        <body style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
+                            <div style='background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; padding: 30px; border-radius: 12px; text-align: center;'>
+                                <h1 style='margin: 0; font-size: 24px;'>🚨 Security Alert</h1>
+                                <p style='margin: 10px 0 0 0; opacity: 0.95;'>Unusual activity detected on your account</p>
+                            </div>
+                            
+                            <div style='background: #FEFBF3; padding: 30px; border-radius: 12px; margin-top: 20px;'>
+                                <h2 style='color: #0A0A0A; margin-top: 0;'>Hello {userName},</h2>
+                                
+                                <p style='color: #4A4A4A; line-height: 1.6;'>
+                                    We detected unusual activity on your Vitakart account and have logged you out from all devices as a security precaution.
+                                </p>
+                                
+                                <div style='background: white; border: 2px solid #E9E1D2; border-radius: 8px; padding: 20px; margin: 20px 0;'>
+                                    <h3 style='color: #EF4444; margin-top: 0;'>🔍 Activity Details:</h3>
+                                    <table style='width: 100%; border-collapse: collapse;'>
+                                        <tr>
+                                            <td style='padding: 8px 0; color: #6B665D;'><strong>⏰ Time:</strong></td>
+                                            <td style='padding: 8px 0; color: #0A0A0A;'>{alertTime}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 8px 0; color: #6B665D;'><strong>📍 IP Address:</strong></td>
+                                            <td style='padding: 8px 0; color: #0A0A0A;'>{alertIp}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 8px 0; color: #6B665D;'><strong>💻 Device:</strong></td>
+                                            <td style='padding: 8px 0; color: #0A0A0A;'>{alertDevice}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <div style='background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; border-radius: 4px; margin: 20px 0;'>
+                                    <h3 style='color: #92400E; margin-top: 0;'>⚡ What to do now:</h3>
+                                    <ol style='color: #78350F; line-height: 1.8;'>
+                                        <li>Log in again with your password</li>
+                                        <li><strong>Change your password immediately</strong></li>
+                                        <li>Review your recent orders and account activity</li>
+                                        <li>If this wasn't you, contact our support team</li>
+                                    </ol>
+                                </div>
+                                
+                                <p style='color: #6B665D; font-size: 14px; margin-top: 30px;'>
+                                    If you recognize this activity, no further action is needed. However, we still recommend changing your password for extra security.
+                                </p>
+                                
+                                <div style='border-top: 1px solid #E9E1D2; margin-top: 30px; padding-top: 20px; text-align: center;'>
+                                    <p style='color: #6B665D; font-size: 12px;'>
+                                        Stay safe,<br>
+                                        <strong style='color: #10B981;'>Vitakart Security Team</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                    ";
+
+                        var plainText = $@"
+Security Alert - Unusual Activity Detected
+
+Hello {userName},
+
+We detected unusual activity on your Vitakart account and have logged you out from all devices as a security precaution.
+
+Activity Details:
+- Time: {alertTime}
+- IP Address: {alertIp}
+- Device: {alertDevice}
+
+What to do now:
+1. Log in again with your password
+2. Change your password immediately
+3. Review your recent orders
+4. If this wasn't you, contact support
+
+Stay safe,
+Vitakart Security Team
+                    ";
+
+                        await _emailService.SendEmailAsync(
+                            userEmail,
+                            userName,
+                            subject,
+                            htmlBody,
+                            plainText
+                        );
+
+                        Console.WriteLine($"✅ Security alert email sent to {userEmail}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Security alert email failed: {ex.Message}");
+                    }
+                });
+            }
+
+            throw new UnauthorizedException(
+                "Security alert: This session has been terminated due to unusual activity. Please login again."
+            );
+        }
+
+        // ==========================================
+        // NORMAL FLOW (Token is active)
+        // ==========================================
+        if (existingToken.IsExpired)
+        {
+            throw new UnauthorizedException("Refresh token expired. Please login again.");
         }
 
         if (existingToken.User == null || existingToken.User.IsDeleted || !existingToken.User.IsActive)
@@ -258,7 +412,6 @@ public class AuthService : IAuthService
             User = MapToUserInfo(existingToken.User)
         };
     }
-
     // ==========================================
     // LOGOUT
     // ==========================================

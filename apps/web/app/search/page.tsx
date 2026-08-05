@@ -229,7 +229,7 @@ function SearchContent() {
           <div className="text-xs font-semibold uppercase tracking-wider text-[#10B981] mb-2">
             Search Results
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-[#0A0A0A] mb-3">
+          <h1 className="text-xl md:text-4xl font-bold text-[#0A0A0A] mb-3">
             Results for &ldquo;{query}&rdquo;
           </h1>
 
@@ -273,7 +273,7 @@ function SearchContent() {
           {/* Results Section */}
           <div>
             {/* Top Bar */}
-            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-20  z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-3 rounded-xl sticky  md:mx-0 shadow-sm border-b border-[#E9E1D2] md:border-0">
+            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-20  z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-3 md:rounded-xl sticky  md:mx-0 shadow-sm border-b border-[#E9E1D2] md:border-0">
               <div className="text-sm">
                 <span className="font-bold text-[#0A0A0A]">
                   {filteredProducts.length}

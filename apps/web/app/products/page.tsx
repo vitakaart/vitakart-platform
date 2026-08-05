@@ -5,15 +5,17 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Filter, Loader2, CheckCircle2 } from "lucide-react";
+import { Filter, CheckCircle2 } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { SortDropdown } from "@/components/shared/sort-dropdown";
 import { ViewToggle } from "@/components/shared/view-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { ProductCardCompact, ProductCardCompactSkeleton } from "@/components/product/product-card-compact";
+import {
+  ProductCardCompact,
+  ProductCardCompactSkeleton,
+} from "@/components/product/product-card-compact";
 import { FilterSidebar, FilterState } from "@/components/products/filter-sidebar";
 import { TalkToExpertCard } from "@/components/products/talk-to-expert-card";
 import { MobileFilterDrawer } from "@/components/products/mobile-filter-drawer";
@@ -57,14 +59,11 @@ export default function ProductsPage() {
 
   const categories = categoriesData ?? [];
 
-  // ==========================================
-  // INFINITE QUERY (Auto-load on scroll)
-  // ==========================================
+  // Infinite query for products
   const {
     data,
     isLoading,
     isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -77,7 +76,6 @@ export default function ProductsPage() {
         pageSize: PAGE_SIZE,
       };
 
-      // Sort options
       if (sort === "price-asc") {
         query.sortBy = "price";
         query.sortOrder = "asc";
@@ -88,7 +86,6 @@ export default function ProductsPage() {
         query.sortBy = "newest";
       }
 
-      // Price filter
       if (filters.maxPrice < 5000) {
         query.maxPrice = filters.maxPrice;
       }
@@ -105,11 +102,21 @@ export default function ProductsPage() {
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
-  // Flatten all pages into single array
+  // Flatten all pages + remove duplicates (safety net for pagination overlap)
   const allProducts = useMemo(() => {
-    return data?.pages.flatMap((page) => page.items) ?? [];
+    const items = data?.pages.flatMap((page) => page.items) ?? [];
+
+    const seen = new Set<string>();
+    return items.filter((product) => {
+      if (seen.has(product.id)) {
+        return false;
+      }
+      seen.add(product.id);
+      return true;
+    });
   }, [data]);
 
   const totalCount = data?.pages[0]?.totalCount ?? 0;
@@ -136,9 +143,7 @@ export default function ProductsPage() {
     return Array.from(brands).sort();
   }, [allProducts]);
 
-  // ==========================================
-  // INTERSECTION OBSERVER (Auto-load trigger)
-  // ==========================================
+  // Intersection observer for infinite scroll
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
@@ -150,13 +155,12 @@ export default function ProductsPage() {
   );
 
   useEffect(() => {
-    
     const element = loadMoreRef.current;
     if (!element) return;
 
     const observer = new IntersectionObserver(handleObserver, {
       root: null,
-      rootMargin: "200px", // Load 200px before reaching bottom
+      rootMargin: "200px",
       threshold: 0.1,
     });
 
@@ -179,12 +183,9 @@ export default function ProductsPage() {
 
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-4xl font-bold text-[#0A0A0A] mb-3">
+          <h1 className="text-xl md:text-4xl font-bold text-[#0A0A0A] mb-3">
             Vitamins & Daily Essentials
           </h1>
-          {/* <p className="text-sm md:text-base text-[#6B665D] max-w-3xl leading-relaxed">
-            Elevate your daily ritual with our science-backed formulations. From organic extracts to clinical-grade essentials, we curate only the purest ingredients to support your lifelong vitality.
-          </p> */}
         </div>
 
         {/* Main Content */}
@@ -203,8 +204,8 @@ export default function ProductsPage() {
           {/* Products Section */}
           <div>
             {/* Top Bar */}
-            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-20  z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-3 rounded-xl sticky  md:mx-0 shadow-sm border-b border-[#E9E1D2] md:border-0">
-              {/* Product Count — Total shown */}
+            <div className="flex items-center justify-between gap-3 mb-6 sticky top-16 md:top-20 z-20 bg-[#FEFBF3]/95 backdrop-blur-md py-3 -mx-4 px-3 md:rounded-xl md:mx-0 shadow-sm border-b border-[#E9E1D2] md:border-0">
+              {/* Product count */}
               <div className="text-sm">
                 <span className="font-bold text-[#0A0A0A]">
                   {filteredProducts.length}
@@ -223,7 +224,7 @@ export default function ProductsPage() {
                   Filters
                 </button>
 
-                {/* Desktop View Toggle */}
+                {/* Desktop view toggle */}
                 <div className="hidden md:block">
                   <ViewToggle view={view} onChange={setView} />
                 </div>
@@ -237,7 +238,7 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Error State */}
+            {/* Error state */}
             {isError && (
               <ErrorState
                 title="Failed to load products"
@@ -245,7 +246,7 @@ export default function ProductsPage() {
               />
             )}
 
-            {/* Empty State */}
+            {/* Empty state */}
             {!isError && !isLoading && filteredProducts.length === 0 && (
               <EmptyState
                 icon="🔍"
@@ -255,11 +256,11 @@ export default function ProductsPage() {
               />
             )}
 
-            {/* Products Grid */}
+            {/* Products grid */}
             {!isError && (isLoading || filteredProducts.length > 0) && (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                  {/* Initial loading */}
+                  {/* Initial loading skeletons */}
                   {isLoading &&
                     Array.from({ length: 8 }).map((_, i) => (
                       <ProductCardCompactSkeleton key={i} />
@@ -268,15 +269,15 @@ export default function ProductsPage() {
                   {/* Loaded products */}
                   {!isLoading &&
                     filteredProducts.map((product, i) => (
-                      <ProductCardCompact key={product.id} product={product} index={i} />
+                      <ProductCardCompact
+                        key={product.id}
+                        product={product}
+                        index={i}
+                      />
                     ))}
                 </div>
 
-                {/* ==========================================
-                     INFINITE SCROLL LOADER
-                     ========================================== */}
-                
-                {/* Loading More Indicator */}
+                {/* Loading more indicator */}
                 {isFetchingNextPage && (
                   <div className="flex flex-col items-center justify-center py-12 gap-3">
                     <div className="relative">
@@ -294,7 +295,7 @@ export default function ProductsPage() {
                   <div ref={loadMoreRef} className="h-4" />
                 )}
 
-                {/* All Caught Up Message */}
+                {/* All caught up message */}
                 {!hasNextPage && !isLoading && filteredProducts.length > 0 && (
                   <div className="flex flex-col items-center justify-center py-12 gap-3">
                     <div className="w-14 h-14 rounded-full bg-[#10B981]/10 flex items-center justify-center">
@@ -315,7 +316,7 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Mobile Filter Drawer */}
+        {/* Mobile filter drawer */}
         <MobileFilterDrawer
           isOpen={isMobileFilterOpen}
           onClose={() => setIsMobileFilterOpen(false)}
