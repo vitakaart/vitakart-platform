@@ -20,8 +20,9 @@ import { NewsletterCTA } from "@/components/home/newsletter-cta";
 export default function HomePage() {
   return (
     <MainLayout>
-      <main className="mx-auto flex container-app flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
         <HeroSlider />
+      <main className="mx-auto flex container-app flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:gap-10">
+      
         <CategoryGrid /> {/* this is come from data fetch */}
         {/* <FeaturedProducts /> */}
         {/* <DealBanner /> */}

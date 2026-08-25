@@ -92,6 +92,7 @@
   /* 16px */
   --radius-2xl: 1.5rem;
   /* 24px */
+  --main-background: lab(97 1.31 5.22);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

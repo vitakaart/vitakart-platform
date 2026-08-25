@@ -22,7 +22,7 @@ export function MainLayout({
       <Navbar />
 
       {/* Main Content — with bottom padding on mobile for bottom nav */}
-      <main className="flex-1 pb-0 md:pb-0 !bg-[#6161611f] ">{children}</main>
+      <main className="flex-1 pb-0 md:pb-0 !bg-[var(--main-background)] ">{children}</main>
 
       {/* Footer — desktop only */}
       {!hideFooter && (
